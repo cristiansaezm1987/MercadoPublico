@@ -1,0 +1,9 @@
+# Jekyll configuration to ignore backend directories and focus only on static files
+exclude:
+  - .venv
+  - config
+  - dashboard
+  - copper_dashboard
+  - db.sqlite3
+  - manage.py
+  - requirements.txt
