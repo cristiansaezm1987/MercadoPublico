@@ -714,6 +714,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (recRubroEl) recRubroEl.addEventListener('change', filterActiveCots);
         if (recRegionEl) recRegionEl.addEventListener('change', filterActiveCots);
         
+        const cotSortBy = document.getElementById('cot-sort-by');
+        const cotDateFilter = document.getElementById('cot-date-filter');
+        if (cotSortBy) cotSortBy.addEventListener('change', filterActiveCots);
+        if (cotDateFilter) cotDateFilter.addEventListener('change', filterActiveCots);
+        
         // Carga inicial (vacia o placeholder)
         filterActiveCots();
     }
@@ -816,20 +821,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const rubroFilter = document.getElementById('rec-rubro')?.value || '';
         const regionFilter = document.getElementById('rec-region')?.value || '';
+        const sortBy = document.getElementById('cot-sort-by')?.value || 'cierre_asc';
+        const dateFilter = document.getElementById('cot-date-filter')?.value || 'all';
 
-        const activeCOTs = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.filter(t => {
+        let activeCOTs = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.filter(t => {
             const isCOT = t.codigo.toUpperCase().includes('COT') || t.tipo === 'compra_agil';
             if (!isCOT) return false;
             if (rubroFilter && t.rubro !== rubroFilter) return false;
             if (regionFilter && t.region !== regionFilter) return false;
+            
+            // Simulated date filters relative to "2026-06-05" (simulated current time)
+            if (dateFilter === 'closing_soon') {
+                const closeDate = new Date(t.fecha_cierre);
+                const diffTime = closeDate - new Date("2026-06-05");
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays < 0 || diffDays > 3) return false;
+            } else if (dateFilter === 'recently_pub') {
+                const pubDate = new Date(t.fecha_publicacion);
+                const diffTime = new Date("2026-06-05") - pubDate;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays < 0 || diffDays > 7) return false;
+            }
+            
             return true;
+        });
+
+        // Sorting logic
+        activeCOTs.sort((a, b) => {
+            if (sortBy === 'cierre_asc') {
+                return new Date(a.fecha_cierre) - new Date(b.fecha_cierre);
+            } else if (sortBy === 'pub_desc') {
+                return new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion);
+            } else if (sortBy === 'presupuesto_desc') {
+                return b.presupuesto - a.presupuesto;
+            }
+            return 0;
         });
 
         if (countEl) countEl.textContent = `${activeCOTs.length} encontradas`;
 
         if (activeCOTs.length === 0) {
             listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:2rem;">
-                No se encontraron compras ágiles activas en ese rubro/región.
+                No se encontraron compras ágiles activas con los filtros aplicados.
             </div>`;
             return;
         }
@@ -838,13 +871,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="cot-item-card" onclick="window.selectCot('${c.codigo}')" id="cot-card-${c.codigo}">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                     <code style="font-family:monospace;font-size:0.75rem;background:rgba(99,102,241,0.15);padding:2px 6px;border-radius:4px;color:var(--primary-light);font-weight:700;">${c.codigo}</code>
-                    <span style="font-size:0.75rem; color:var(--warning); font-weight:600;">Cierre: ${formatDateShort(c.fecha_cierre)}</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">${formatCLP(c.presupuesto)}</span>
                 </div>
-                <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-light); line-height:1.4;">${c.nombre}</h4>
-                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.5rem;">${c.comprador}</p>
+                <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:0.6rem; color:var(--text-light); line-height:1.4;">${c.nombre}</h4>
+                
+                <!-- Fechas de publicacion y cierre -->
+                <div style="font-size:0.72rem; color:var(--text-dark); margin-bottom:0.6rem; display:grid; grid-template-columns:1fr 1fr; gap:0.25rem;">
+                    <div>Publicada: <strong style="color:var(--text-muted);">${formatDateShort(c.fecha_publicacion)}</strong></div>
+                    <div style="text-align:right;">Cierre: <strong style="color:var(--warning);">${formatDateShort(c.fecha_cierre)}</strong></div>
+                </div>
+
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-top:1px solid rgba(148,163,184,0.08); padding-top:0.4rem;">
-                    <span style="color:var(--text-dark);">${c.region.replace('Region de', 'R.').replace('Region del', 'R.').replace('Metropolitana', 'M.')}</span>
-                    <strong style="color:var(--secondary); font-family:monospace;">${formatCLP(c.presupuesto)}</strong>
+                    <span style="color:var(--text-dark); font-size:0.75rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.comprador}">${c.comprador}</span>
+                    <span style="color:var(--primary-light); font-size:0.75rem; font-weight:500;">${c.region.replace('Region de', 'R.').replace('Region del', 'R.').replace('Metropolitana', 'M.')}</span>
                 </div>
             </div>
         `).join('');
