@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sincronizacion variables globales
     window.apiSynced = false;
     window.selectedYears = ['2023', '2024', '2025', '2026'];
+    window.activeCotCode = null;
+    window.activeSubTabId = 'sub-tab-strategy';
 
     init();
 
@@ -78,7 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate recent-tenders-body
         const recentTendersBody = document.getElementById('recent-tenders-body');
         if (recentTendersBody) {
-            recentTendersBody.innerHTML = recentTenders.slice(0, 8).map(t => `
+            recentTendersBody.innerHTML = recentTenders.slice(0, 8).map(t => {
+                const scoreIA = calculate_cot_score(t);
+                let badgeClass = 'score-badge-green';
+                if (scoreIA >= 80) badgeClass = 'score-badge-gold';
+                if (scoreIA < 50) badgeClass = 'score-badge-blue';
+                return `
                 <tr>
                     <td><code style="font-family:monospace;font-size:0.75rem;background:rgba(99,102,241,0.1);padding:2px 6px;border-radius:4px;color:var(--primary-light);">${t.codigo}</code></td>
                     <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.nombre}">${t.nombre}</td>
@@ -87,10 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="font-size:0.8rem;color:var(--text-muted);">${formatDateShort(t.fecha_publicacion)}</td>
                     <td style="font-size:0.8rem;color:var(--warning);">${formatDateShort(t.fecha_cierre)}</td>
                     <td style="font-family:monospace;">${formatCLP(t.presupuesto_estimado)}</td>
-                    <td style="color:var(--text-muted);font-size:0.85rem;">${t.adjudicado_a}</td>
+                    <td style="color:var(--text-muted);font-size:0.85rem;"><span class="${badgeClass}">${scoreIA.toFixed(0)}% Score IA</span></td>
                     <td style="font-family:monospace;font-weight:600;color:var(--success);">${formatCLP(t.precio_adjudicado)}</td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
     }
 
@@ -100,6 +107,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const compradores = window.DATA_FIXTURES.COMPRADORES.filter(c => !region || c.region === region);
         simComprador.innerHTML = '<option value="">-- Todos los compradores --</option>' + 
             compradores.map(c => `<option value="${c.nombre}">${c.nombre} (${c.ciudad})</option>`).join('');
+    }
+
+    // Helper to calculate a score for UI
+    function calculate_cot_score(t) {
+        const rubroId = t.rubro || 'ti';
+        const rubros = window.DATA_FIXTURES.RUBROS;
+        const rubro = rubros.find(r => r.id === rubroId) || rubros[0];
+        
+        let nBidders = t.n_oferentes_esperados || 8;
+        let bidFactor = Math.max(0.4, 1.0 - (nBidders / 25.0));
+        let score = (rubro.probabilidad_base * 0.4 + bidFactor * 0.4 + rubro.tasa_adjudicacion_promedio * 0.2) * 100;
+        
+        if (t.region === "Region Metropolitana") score += 6;
+        score = Math.max(20, Math.min(97, score));
+        return score;
     }
 
     // ---- NAVIGATION ----
@@ -150,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch { return dateStr.split('T')[0] || dateStr; }
     }
 
+    // counts up percentage values
     function animateValue(el, start, end, duration) {
         if (!el) return;
         let ts = null;
@@ -846,7 +869,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
-        // Sorting logic
+        // Map and enrich COTs with calculated IA Win Score
+        activeCOTs = activeCOTs.map(t => {
+            const scoreIA = calculate_cot_score(t);
+            return { ...t, scoreIA: scoreIA };
+        });
+
+        // Sorting logic (primary is always the selected sorting criteria, default score/cierre)
         activeCOTs.sort((a, b) => {
             if (sortBy === 'cierre_asc') {
                 return new Date(a.fecha_cierre) - new Date(b.fecha_cierre);
@@ -858,6 +887,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return 0;
         });
 
+        // If no sort selected or default, let's sort by Score IA descending so user gets daily recommendations!
+        if (sortBy === 'cierre_asc' && rubroFilter === '' && regionFilter === '') {
+            // Sort by Score IA by default to suggest high-probability opportunities at the top!
+            activeCOTs.sort((a, b) => b.scoreIA - a.scoreIA);
+        }
+
         if (countEl) countEl.textContent = `${activeCOTs.length} encontradas`;
 
         if (activeCOTs.length === 0) {
@@ -867,11 +902,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        listContainer.innerHTML = activeCOTs.map((c, i) => `
+        listContainer.innerHTML = activeCOTs.map((c, i) => {
+            const scoreColor = getProbColor(c.scoreIA);
+            let recommendationBadge = '';
+            if (c.scoreIA >= 80) {
+                recommendationBadge = `<span style="font-size:0.65rem; background:rgba(16,185,129,0.15); color:var(--success); font-weight:700; padding:1px 6px; border-radius:3px; border:1px solid rgba(16,185,129,0.2);">RECOMENDADA</span>`;
+            } else if (c.scoreIA >= 65) {
+                recommendationBadge = `<span style="font-size:0.65rem; background:rgba(6,182,212,0.15); color:var(--secondary); font-weight:700; padding:1px 6px; border-radius:3px; border:1px solid rgba(6,182,212,0.2);">VIABLE</span>`;
+            }
+
+            return `
             <div class="cot-item-card" onclick="window.selectCot('${c.codigo}')" id="cot-card-${c.codigo}">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                     <code style="font-family:monospace;font-size:0.75rem;background:rgba(99,102,241,0.15);padding:2px 6px;border-radius:4px;color:var(--primary-light);font-weight:700;">${c.codigo}</code>
-                    <span style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">${formatCLP(c.presupuesto)}</span>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        ${recommendationBadge}
+                        <span class="badge" style="background:${scoreColor}15; color:${scoreColor}; border:1px solid ${scoreColor}30; font-weight:700; font-size:0.65rem;">${c.scoreIA.toFixed(0)}% IA</span>
+                    </div>
                 </div>
                 <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:0.6rem; color:var(--text-light); line-height:1.4;">${c.nombre}</h4>
                 
@@ -882,11 +929,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-top:1px solid rgba(148,163,184,0.08); padding-top:0.4rem;">
-                    <span style="color:var(--text-dark); font-size:0.75rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.comprador}">${c.comprador}</span>
-                    <span style="color:var(--primary-light); font-size:0.75rem; font-weight:500;">${c.region.replace('Region de', 'R.').replace('Region del', 'R.').replace('Metropolitana', 'M.')}</span>
+                    <span style="color:var(--text-dark); font-size:0.75rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.comprador}">${c.comprador}</span>
+                    <strong style="color:var(--secondary); font-family:monospace;">${formatCLP(c.presupuesto)}</strong>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     window.selectCot = function(codigo) {
@@ -895,12 +942,127 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedCard = document.getElementById(`cot-card-${codigo}`);
         if (selectedCard) selectedCard.classList.add('active');
 
+        // Guardar codigo activo
+        window.activeCotCode = codigo;
+
         // Buscar COT
         const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === codigo);
         if (!cot) return;
 
         renderCotAnalytics(cot);
     };
+
+    // SWITCH INTERNAL SUB TABS IN ANALYTICS PANEL
+    window.switchSubTab = function(subTabId) {
+        window.activeSubTabId = subTabId;
+        
+        // Buttons
+        const btns = document.querySelectorAll('.sub-tab-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        
+        // Set clicked button active
+        const clickedBtn = Array.from(btns).find(b => b.getAttribute('onclick').includes(subTabId));
+        if (clickedBtn) clickedBtn.classList.add('active');
+
+        // Content areas
+        const contents = document.querySelectorAll('.sub-tab-content');
+        contents.forEach(c => c.classList.remove('active'));
+        
+        const targetContent = document.getElementById(subTabId);
+        if (targetContent) targetContent.classList.add('active');
+
+        // Handle charts resize or render if switching strategy/competitors tabs
+        if (subTabId === 'sub-tab-strategy') {
+            // redraw sensitivity
+            if (window.lastAnalysisData) {
+                renderSensitivityChart(window.lastAnalysisData);
+            }
+        } else if (subTabId === 'sub-tab-competitors') {
+            // redraw history chart
+            if (window.lastSimilarHistory) {
+                renderCotHistoryChart(window.lastSimilarHistory);
+            }
+        }
+    };
+
+    // AUTOMATIC LOCAL SUPPLIER AND ITEM CATALOG MATCHING
+    function matchItemsWithSuppliers(cot) {
+        const suppliers = window.DATA_FIXTURES.PROVEEDORES_LOCALES;
+        const rubros = window.DATA_FIXTURES.RUBROS;
+        const rubro = rubros.find(r => r.id === cot.rubro) || rubros[0];
+        
+        // Find suppliers in the COT's region first, matching the rubro
+        let regionalSuppliers = suppliers.filter(s => s.rubros.includes(cot.rubro) && s.region === cot.region);
+        if (regionalSuppliers.length === 0) {
+            regionalSuppliers = suppliers.filter(s => s.rubros.includes(cot.rubro));
+        }
+        if (regionalSuppliers.length === 0) {
+            regionalSuppliers = suppliers;
+        }
+        
+        // Sort by best score (discount * reliability)
+        regionalSuppliers.sort((a, b) => (b.descuento * b.confiabilidad) - (a.descuento * a.confiabilidad));
+        const bestSupplier = regionalSuppliers[0];
+        
+        const items = cot.items || [];
+        const matchedItems = [];
+        let totalCost = 0;
+        let totalBid = 0;
+        
+        // Distribute budget
+        const totalQty = items.reduce((sum, it) => sum + (it.cantidad || 1), 0);
+        const avgUnitBudget = cot.presupuesto / (totalQty || 1);
+        
+        items.forEach((item, index) => {
+            const itemSupplier = regionalSuppliers[index % regionalSuppliers.length] || bestSupplier;
+            
+            // Baseline cost is 70% of estimated average budget, with supplier discount applied
+            const baseCost = avgUnitBudget * 0.70;
+            const discountedCost = baseCost * (1 - itemSupplier.descuento);
+            
+            // Suggested bid price: cost *typical margin
+            const markup = 1.0 + rubro.margen_promedio;
+            let suggestedBidUnit = discountedCost * markup;
+            
+            if (suggestedBidUnit > avgUnitBudget) {
+                suggestedBidUnit = avgUnitBudget * 0.94;
+            }
+            
+            const qty = item.cantidad || 1;
+            const itemTotalCost = discountedCost * qty;
+            const itemTotalBid = suggestedBidUnit * qty;
+            const itemMargin = itemTotalBid - itemTotalCost;
+            const marginPct = (itemMargin / itemTotalBid) * 100;
+            
+            matchedItems.push({
+                producto: item.producto || `Insumo Especializado ${index + 1}`,
+                cantidad: qty,
+                unidad: item.unidad || 'Unidad',
+                proveedor: itemSupplier.nombre,
+                costoUnitario: discountedCost,
+                costoTotal: itemTotalCost,
+                precioHistoricoUnitario: avgUnitBudget,
+                precioSugeridoUnitario: suggestedBidUnit,
+                precioSugeridoTotal: itemTotalBid,
+                margen: itemMargin,
+                marginPct: marginPct
+            });
+            
+            totalCost += itemTotalCost;
+            totalBid += itemTotalBid;
+        });
+        
+        const totalMargin = totalBid - totalCost;
+        const totalMarginPct = (totalMargin / totalBid) * 100;
+        
+        return {
+            items: matchedItems,
+            totalCost: totalCost,
+            totalBid: totalBid,
+            totalMargin: totalMargin,
+            totalMarginPct: totalMarginPct
+        };
+    }
 
     function renderCotAnalytics(cot) {
         const panel = document.getElementById('cot-analytics-panel');
@@ -909,23 +1071,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const rubroId = cot.rubro;
         const budget = cot.presupuesto;
 
-        // Filtrar historial de compras similares basándose en:
+        // Filtrar histórico de compras similares basándose en:
         // 1. Rubro coincidente
         // 2. Años seleccionados por el usuario
         // 3. Rango de presupuesto (+/- 40%)
-        // 4. Coincidencias de palabras clave en el título
         const years = window.selectedYears || ['2023', '2024', '2025', '2026'];
         
         let similarHistory = window.DATA_FIXTURES.HISTORIAL_LICITACIONES.filter(h => {
             const hYear = h.fecha_publicacion.split('-')[0];
             if (!years.includes(hYear)) return false;
             
-            // Criterio 1: Rubro
             const matchRubro = (h.rubro === rubroId);
-            
-            // Criterio 2: Presupuesto +/- 50%
-            const matchBudget = (h.presupuesto_estimado >= budget * 0.5 && h.presupuesto_estimado <= budget * 1.8);
-            
+            const matchBudget = (h.presupuesto_estimado >= budget * 0.4 && h.presupuesto_estimado <= budget * 2.2);
             return matchRubro && matchBudget;
         });
 
@@ -941,37 +1098,37 @@ document.addEventListener('DOMContentLoaded', () => {
             return { ...h, keywordScore: score };
         });
 
-        // Ordenar por afinidad
         similarHistory.sort((a, b) => b.keywordScore - a.keywordScore);
 
-        // Si no hay similares, usar fallbacks para asegurar robustez
         if (similarHistory.length === 0) {
-            similarHistory = window.DATA_FIXTURES.HISTORIAL_LICITACIONES.slice(0, 3);
+            similarHistory = window.DATA_FIXTURES.HISTORIAL_LICITACIONES.slice(0, 4);
         }
 
-        // Estadísticas de precios
-        const prices = [];
-        const winningPrices = [];
-        similarHistory.forEach(h => {
-            winningPrices.push(h.precio_adjudicado);
-            prices.push(h.precio_adjudicado);
-            if (h.competidores_participantes) {
-                h.competidores_participantes.forEach(c => prices.push(c.precio));
-            }
-        });
+        window.lastSimilarHistory = similarHistory.slice(0, 6);
 
-        const maxPrice = Math.max(...prices);
-        const minPrice = Math.min(...prices);
-        const avgWinning = winningPrices.reduce((a, b) => a + b, 0) / winningPrices.length;
-        
-        // Oferta recomendada por IA: promedio menos un 6% para ser competitivo pero mantener margen
-        const suggestedBid = Math.min(budget * 0.94, avgWinning * 0.95);
+        // Cruce con proveedores
+        const supplierMatching = matchItemsWithSuppliers(cot);
 
+        // Calcular costo y simulación
+        const costVal = supplierMatching.totalCost;
+        const suggestedBidPrice = supplierMatching.totalBid;
+        const totalMargin = supplierMatching.totalMargin;
+        const totalMarginPct = supplierMatching.totalMarginPct;
+
+        // Ejecutar simulación detallada para las curvas de sensibilidad
+        const optimalSimData = calculate_optimal_bid(costVal, rubroId, cot.region, cot.comprador);
+        window.lastAnalysisData = optimalSimData;
+
+        // Renderizar el layout de sub-pestañas
         panel.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.2rem; border-bottom:1px solid rgba(148,163,184,0.1); padding-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+            <!-- Encabezado Inteligente -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; border-bottom:1px solid rgba(148,163,184,0.1); padding-bottom:1rem; flex-wrap:wrap; gap:1rem;">
                 <div>
-                    <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Detalle Compra Ágil Activa</span>
-                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--text-light); margin-top:0.2rem;">${cot.nombre}</h3>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Inteligencia Diaria COT</span>
+                        <span class="badge" style="background:var(--success)15; color:var(--success); border:1px solid var(--success)30; font-weight:700; font-size:0.65rem; margin-left:4px;">Probabilidad de Éxito: ${cot.scoreIA.toFixed(0)}%</span>
+                    </div>
+                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--text-light); margin-top:0.25rem;">${cot.nombre}</h3>
                     <div style="display:flex; gap:12px; font-size:0.8rem; color:var(--text-muted); margin-top:0.4rem; align-items:center;">
                         <span>Cód: <code>${cot.codigo}</code></span>
                         <span>•</span>
@@ -979,109 +1136,180 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div style="text-align:right;">
-                    <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Presupuesto Disponible</span>
+                    <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Presupuesto de Compra</span>
                     <div style="font-size:1.35rem; font-weight:800; color:var(--secondary); font-family:monospace; margin-top:0.2rem;">${formatCLP(budget)}</div>
-                    <button class="btn btn-sm" onclick="window.simularEstaCot('${cot.codigo}', ${suggestedBid})" style="margin-top:0.5rem; font-size:0.72rem; padding:0.3rem 0.6rem;">Simular Precio</button>
+                    <span style="font-size:0.72rem; color:var(--text-dark); display:block; margin-top:0.25rem;">Región: ${cot.region.replace('Region de', 'R.').replace('Metropolitana', 'M.')}</span>
                 </div>
             </div>
 
-            <!-- Mini Grid KPIs Analiticos -->
-            <div class="stats-mini-grid" style="margin-bottom:1.5rem;">
-                <div class="stat-mini-card">
-                    <span>Precio Prom. Ganador</span>
-                    <div style="color:var(--primary-light);">${formatCLP(avgWinning)}</div>
+            <!-- Navegación de Sub-Pestañas -->
+            <div class="analytics-sub-tabs">
+                <button class="sub-tab-btn active" onclick="window.switchSubTab('sub-tab-strategy')">Estrategia y Simulación IA</button>
+                <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-costs')">Costos y Proveedores Actuales</button>
+                <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-competitors')">Competencia Histórica</button>
+            </div>
+
+            <!-- CONTENIDO SUB-PESTAÑA 1: ESTRATEGIA Y SIMULACION -->
+            <div id="sub-tab-strategy" class="sub-tab-content active">
+                <div class="stats-mini-grid" style="margin-bottom:1.25rem;">
+                    <div class="stat-mini-card">
+                        <span>Costo de Compra Est.</span>
+                        <div style="color:var(--text-muted);">${formatCLP(costVal)}</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <span>Margen Proyectado</span>
+                        <div style="color:var(--success);">${totalMarginPct.toFixed(1)}%</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <span>Prob. de Ganar</span>
+                        <div style="color:${getProbColor(cot.scoreIA)}; font-weight:800;">${cot.scoreIA.toFixed(0)}%</div>
+                    </div>
+                    <div class="stat-mini-card" style="border-color:var(--secondary); background:rgba(99,102,241,0.06);">
+                        <span>Precio Oferta IA</span>
+                        <div style="color:var(--secondary); font-size:1rem; font-weight:800;">${formatCLP(suggestedBidPrice)}</div>
+                    </div>
                 </div>
-                <div class="stat-mini-card">
-                    <span>Mejor Oferta Histórica</span>
-                    <div style="color:var(--success);">${formatCLP(minPrice)}</div>
-                </div>
-                <div class="stat-mini-card">
-                    <span>Adjudicaciones Similares</span>
-                    <div style="color:var(--accent);">${similarHistory.length} COTs</div>
-                </div>
-                <div class="stat-mini-card" style="border-color:var(--secondary);">
-                    <span>Oferta IA Recomendada</span>
-                    <div style="color:var(--secondary); font-size:1rem; font-weight:800;">${formatCLP(suggestedBid)}</div>
+
+                <div class="card" style="padding:0.75rem; margin-bottom:0; background:rgba(30,41,59,0.25);">
+                    <div class="card-header" style="padding:0.5rem 0.5rem 0.75rem 0.5rem;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Elasticidad de Precio: Probabilidad vs Utilidad Proyectada</h4></div>
+                    <div id="chart-sensitivity" style="height: 220px;"></div>
                 </div>
             </div>
 
-            <!-- Gráfico de Precios Históricos -->
-            <div class="card" style="padding:0.75rem; margin-bottom:1.5rem; background:rgba(30,41,59,0.25);">
-                <div class="card-header" style="padding:0.5rem 0.5rem 0.75rem 0.5rem;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Historial de Precios Adjudicados</h4></div>
-                <div id="chart-cot-history" style="height: 180px;"></div>
-            </div>
-
-            <!-- Tabla de Ultimos Adjudicados Similares -->
-            <div class="card" style="padding:0.75rem; margin-bottom:1.5rem;">
-                <div class="card-header" style="padding:0.5rem 0 0.75rem 0;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Historial de Adjudicaciones en Años Seleccionados</h4></div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Proceso Histórico</th>
-                                <th>Organismo</th>
-                                <th>Adjudicado A</th>
-                                <th>Precio Adjudicado</th>
-                                <th>Año</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${similarHistory.slice(0, 5).map(h => `
+            <!-- CONTENIDO SUB-PESTAÑA 2: COSTOS Y PROVEEDORES (CRUCE EN LÍNEA) -->
+            <div id="sub-tab-costs" class="sub-tab-content">
+                <div class="card" style="padding:0.75rem; margin-bottom:0;">
+                    <div class="card-header" style="padding:0.5rem 0 0.75rem 0; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                        <h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Desglose del Catálogo de Insumos y Proveedores Asociados</h4>
+                        <span style="font-size:0.72rem; color:var(--text-muted);">Cruce en línea automático basado en la región del comprador</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="cost-table">
+                            <thead>
                                 <tr>
-                                    <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;" title="${h.nombre}">
-                                        <code style="font-family:monospace; font-size:0.7rem; background:rgba(99,102,241,0.08); padding:2px 4px; border-radius:3px; color:var(--text-muted); margin-right:4px;">${h.codigo}</code>
-                                        ${h.nombre}
-                                    </td>
-                                    <td style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem; color:var(--text-muted);">${h.comprador}</td>
-                                    <td style="max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem;">${h.adjudicado_a}</td>
-                                    <td style="font-family:monospace; font-weight:700; color:var(--success);">${formatCLP(h.precio_adjudicado)}</td>
-                                    <td style="font-size:0.8rem; color:var(--text-dark);">${h.fecha_publicacion.split('-')[0]}</td>
+                                    <th>Ítem Solicitado</th>
+                                    <th>Cant.</th>
+                                    <th>Proveedor Sugerido</th>
+                                    <th>Costo Unit. (Descto)</th>
+                                    <th>Costo Total</th>
+                                    <th>Precio Sugerido</th>
+                                    <th>Precio Total</th>
+                                    <th>Margen Est.</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${supplierMatching.items.map(it => `
+                                    <tr>
+                                        <td style="font-weight:600; color:var(--text-light); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${it.producto}">${it.producto}</td>
+                                        <td>${it.cantidad} ${it.unidad}</td>
+                                        <td style="color:var(--text-muted); font-size:0.78rem;">${it.proveedor}</td>
+                                        <td style="font-family:monospace;">${formatCLP(it.costoUnitario)}</td>
+                                        <td style="font-family:monospace; font-weight:600;">${formatCLP(it.costoTotal)}</td>
+                                        <td style="font-family:monospace; color:var(--text-muted);">${formatCLP(it.precioSugeridoUnitario)}</td>
+                                        <td style="font-family:monospace; font-weight:700; color:var(--secondary);">${formatCLP(it.precioSugeridoTotal)}</td>
+                                        <td>
+                                            <span style="color:var(--success); font-weight:600; font-size:0.78rem;">${it.marginPct.toFixed(0)}%</span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td>TOTAL PROYECTADO</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td style="font-family:monospace; color:var(--text-light);">${formatCLP(costVal)}</td>
+                                    <td></td>
+                                    <td style="font-family:monospace; color:var(--secondary); font-size:0.9rem;">${formatCLP(suggestedBidPrice)}</td>
+                                    <td style="color:var(--success); font-size:0.9rem;">${totalMarginPct.toFixed(1)}%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Historial de Precios Ofertados de Competidores -->
-            <div class="card" style="padding:0.75rem; margin-bottom:0;">
-                <div class="card-header" style="padding:0.5rem 0 0.75rem 0;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Competidores Históricos y Ofertas del Rubro</h4></div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Competidor</th>
-                                <th>Precio Ofertado</th>
-                                <th>Año Oferta</th>
-                                <th>Resultado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${similarHistory.flatMap(h => (h.competidores_participantes || []).map(comp => ({ ...comp, code: h.codigo, year: h.fecha_publicacion.split('-')[0] }))).slice(0, 6).map(c => `
+            <!-- CONTENIDO SUB-PESTAÑA 3: COMPETENCIA HISTORICA -->
+            <div id="sub-tab-competitors" class="sub-tab-content">
+                <!-- Gráfico de Historia -->
+                <div class="card" style="padding:0.75rem; margin-bottom:1.25rem; background:rgba(30,41,59,0.25);">
+                    <div class="card-header" style="padding:0.5rem 0.5rem 0.75rem 0.5rem;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Historial de Precios Adjudicados en ${years.join(', ')}</h4></div>
+                    <div id="chart-cot-history" style="height: 180px;"></div>
+                </div>
+
+                <!-- Tabla de Adjudicados -->
+                <div class="card" style="padding:0.75rem; margin-bottom:1.25rem;">
+                    <div class="card-header" style="padding:0.5rem 0 0.75rem 0;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Últimos Adjudicados Similares</h4></div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td style="font-weight:500;">
-                                        <code style="font-family:monospace; font-size:0.7rem; color:var(--text-dark); margin-right:4px;">${c.code}</code>
-                                        ${c.nombre}
-                                    </td>
-                                    <td style="font-family:monospace; font-weight:600;">${formatCLP(c.precio)}</td>
-                                    <td style="font-size:0.8rem; color:var(--text-muted);">${c.year}</td>
-                                    <td>
-                                        <span class="badge ${c.adjudicado ? 'badge-success' : 'badge-warning'}" style="font-size:0.65rem; padding: 2px 6px;">
-                                            ${c.adjudicado ? 'Adjudicado' : 'Ofertado'}
-                                        </span>
-                                    </td>
+                                    <th>Proceso Histórico</th>
+                                    <th>Organismo</th>
+                                    <th>Proveedor Ganador</th>
+                                    <th>Monto Adjudicado</th>
+                                    <th>Año</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${similarHistory.slice(0, 4).map(h => `
+                                    <tr>
+                                        <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;" title="${h.nombre}">
+                                            <code style="font-family:monospace; font-size:0.7rem; background:rgba(99,102,241,0.08); padding:2px 4px; border-radius:3px; color:var(--text-muted); margin-right:4px;">${h.codigo}</code>
+                                            ${h.nombre}
+                                        </td>
+                                        <td style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem; color:var(--text-muted);">${h.comprador}</td>
+                                        <td style="max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem;">${h.adjudicado_a}</td>
+                                        <td style="font-family:monospace; font-weight:700; color:var(--success);">${formatCLP(h.precio_adjudicado)}</td>
+                                        <td style="font-size:0.8rem; color:var(--text-dark);">${h.fecha_publicacion.split('-')[0]}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tabla de Ofertas de Competidores -->
+                <div class="card" style="padding:0.75rem; margin-bottom:0;">
+                    <div class="card-header" style="padding:0.5rem 0 0.75rem 0;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Historial de Precios Ofertados de Competidores</h4></div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Competidor</th>
+                                    <th>Monto Ofertado</th>
+                                    <th>Proceso</th>
+                                    <th>Año</th>
+                                    <th>Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${similarHistory.flatMap(h => (h.competidores_participantes || []).map(comp => ({ ...comp, code: h.codigo, year: h.fecha_publicacion.split('-')[0] }))).slice(0, 6).map(c => `
+                                    <tr>
+                                        <td style="font-weight:500;">${c.nombre}</td>
+                                        <td style="font-family:monospace; font-weight:600;">${formatCLP(c.precio)}</td>
+                                        <td><code style="font-family:monospace; font-size:0.7rem; color:var(--text-dark);">${c.code}</code></td>
+                                        <td style="font-size:0.8rem; color:var(--text-muted);">${c.year}</td>
+                                        <td>
+                                            <span class="badge ${c.adjudicado ? 'badge-success' : 'badge-warning'}" style="font-size:0.65rem; padding: 2px 6px;">
+                                                ${c.adjudicado ? 'Adjudicado' : 'Ofertado'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         `;
 
-        // Renderizar el gráfico de historia
+        // Renderizar gráficos en diferido
         setTimeout(() => {
+            renderSensitivityChart(optimalSimData);
             renderCotHistoryChart(similarHistory.slice(0, 6));
-        }, 100);
+        }, 150);
     }
 
     function renderCotHistoryChart(historyData) {
@@ -1115,35 +1343,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         chartCotHistory.render();
     }
-
-    window.simularEstaCot = function(codigo, suggestedPrice) {
-        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === codigo);
-        if (!cot) return;
-
-        // Ir a la pestaña de simulación
-        const navItemSim = document.querySelector('.nav-item[data-tab="tab-simulator"]');
-        if (navItemSim) navItemSim.click();
-
-        // Autopoblar formulario del simulador
-        const costInput = document.getElementById('sim-cost');
-        const rubroSelect = document.getElementById('sim-rubro');
-        const regionSelect = document.getElementById('sim-region');
-        
-        if (costInput) {
-            // Costo base = presupuesto / 1.15 aproximado (o un valor razonable para simular margen)
-            costInput.value = Math.round(cot.presupuesto / 1.15);
-        }
-        if (rubroSelect) rubroSelect.value = cot.rubro;
-        if (regionSelect) regionSelect.value = cot.region;
-
-        // Actualizar dropdown de compradores y simular
-        populateCompradoresDropdown(cot.region);
-        setTimeout(() => {
-            const compradorSelect = document.getElementById('sim-comprador');
-            if (compradorSelect) compradorSelect.value = cot.comprador;
-            runSimulation();
-        }, 100);
-    };
 
     // Helper sleep
     function sleep(ms) {
