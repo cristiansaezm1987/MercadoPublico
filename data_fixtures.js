@@ -819,7 +819,7 @@ window.DATA_FIXTURES = {
   ],
   "HISTORIAL_LICITACIONES": [
     {
-      "codigo": "2239-15-L126",
+      "codigo": "2239-15-COT26",
       "nombre": "Adquisicion de Servidores y Equipos de Red para Hospital San Borja",
       "rubro": "ti",
       "rubro_nombre": "Tecnologia de la Informacion",
@@ -851,7 +851,7 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "1123-2-LP26",
+      "codigo": "1123-2-COT26",
       "nombre": "Convenio Suministro Insumos Clinicos Desechables",
       "rubro": "salud",
       "rubro_nombre": "Salud e Insumos Medicos",
@@ -883,7 +883,7 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "4815-162-SE26",
+      "codigo": "4815-162-COT26",
       "nombre": "Servicio de Pinturas y Reparacion Escuelas Basicas",
       "rubro": "construccion",
       "rubro_nombre": "Construccion y Obras Menores",
@@ -915,7 +915,7 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "2245-12-L126",
+      "codigo": "2245-12-COT26",
       "nombre": "Suministro de Articulos de Escritorio y Papeleria 2026",
       "rubro": "oficina",
       "rubro_nombre": "Oficina y Articulos de Escritorio",
@@ -947,7 +947,7 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "3011-88-LE26",
+      "codigo": "3011-88-COT26",
       "nombre": "Servicio de Aseo y Desinfeccion Hospital Concepcion",
       "rubro": "aseo",
       "rubro_nombre": "Limpieza e Insumos Sanitarios",
@@ -981,9 +981,9 @@ window.DATA_FIXTURES = {
   ],
   "LICITACIONES_ACTIVAS": [
     {
-      "codigo": "1027-55-LE26",
+      "codigo": "1027-55-COT26",
       "nombre": "Adquisicion Notebooks y Tablet para Escuelas Municipales",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "ti",
       "rubro_nombre": "Tecnologia de la Informacion",
       "comprador": "Ilustre Municipalidad de Santiago",
@@ -1009,9 +1009,9 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "2150-12-LP26",
+      "codigo": "2150-12-COT26",
       "nombre": "Convenio Marco Insumos Clinicos Desechables 2026-2027",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "salud",
       "rubro_nombre": "Salud e Insumos Medicos",
       "comprador": "Servicio de Salud Metropolitano Sur",
@@ -1037,9 +1037,9 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "4100-33-LE26",
+      "codigo": "4100-33-COT26",
       "nombre": "Reparacion y Pintura Edificio Municipalidad Temuco",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "construccion",
       "rubro_nombre": "Construccion y Obras Menores",
       "comprador": "Ilustre Municipalidad de Temuco",
@@ -1065,9 +1065,9 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "5520-22-L126",
+      "codigo": "5520-22-COT26",
       "nombre": "Suministro Articulos de Oficina y Papeleria Hospital Antofagasta",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "oficina",
       "rubro_nombre": "Oficina y Articulos de Escritorio",
       "comprador": "Hospital Regional de Antofagasta",
@@ -1149,9 +1149,9 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "7833-44-LE26",
+      "codigo": "7833-44-COT26",
       "nombre": "Adquisicion Equipamiento Computacional Municipalidad Concepcion",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "ti",
       "rubro_nombre": "Tecnologia de la Informacion",
       "comprador": "Ilustre Municipalidad de Concepcion",
@@ -1177,9 +1177,9 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "8900-15-LP26",
+      "codigo": "8900-15-COT26",
       "nombre": "Convenio Suministro Raciones Alimentarias Casino Hospital Iquique",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "alimentos",
       "rubro_nombre": "Alimentos y Raciones",
       "comprador": "Hospital Regional de Iquique",
@@ -1205,9 +1205,9 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "9100-66-LE26",
+      "codigo": "9100-66-COT26",
       "nombre": "Mantension Infraestructura Vial y Aceras Municipalidad Antofagasta",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "construccion",
       "rubro_nombre": "Construccion y Obras Menores",
       "comprador": "Ilustre Municipalidad de Antofagasta",
@@ -1266,9 +1266,9 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "1350-200-LE26",
+      "codigo": "1350-200-COT26",
       "nombre": "Servicio de Aseo Edificio Intendencia Regional Valparaiso",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "aseo",
       "rubro_nombre": "Limpieza e Insumos Sanitarios",
       "comprador": "Ilustre Municipalidad de Valparaiso",
@@ -1289,9 +1289,9 @@ window.DATA_FIXTURES = {
       ]
     },
     {
-      "codigo": "2240-14-LE26",
+      "codigo": "2240-14-COT26",
       "nombre": "Adquisicion Soporte Tecnico TI Mesa de Ayuda",
-      "tipo": "licitacion",
+      "tipo": "compra_agil",
       "rubro": "ti",
       "rubro_nombre": "Tecnologia de la Informacion",
       "comprador": "Subsecretaria de Educacion (MINEDUC)",

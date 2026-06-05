@@ -76,7 +76,7 @@ def _find_in_local(codigo):
     """Search in LICITACIONES_ACTIVAS for a matching code."""
     for licit in LICITACIONES_ACTIVAS:
         if licit["codigo"].upper() == str(codigo).upper():
-            tipo_label = "Compra Agil" if licit["tipo"] == "compra_agil" else "Licitacion Publica"
+            tipo_label = "Compra Agil" if licit["tipo"] == "compra_agil" else "Compra Agil"
             items_listado = [
                 {
                     "CodigoProducto": f"ITEM-{i+1:03d}",
@@ -135,12 +135,12 @@ def _get_fallback_tenders(date_str, estado):
         "Region de Antofagasta", "Region de La Araucania", "Region de Tarapaca"
     ]
     names_by_rubro = {
-        "ti": ["Adquisicion Equipos de Red y Enlace Fibra", "Soporte TI y Servidores", "Notebooks Alumnos Escuelas", "Desarrollo Sistema Web Municipal"],
-        "salud": ["Convenio Insumos Clinicos Desechables", "Equipamiento Rayos X Hospital", "Jeringas y Guantes Desechables", "Camillas de Emergencia Hospitalaria"],
-        "construccion": ["Reparacion Techumbre Liceo Municipal", "Pavimentacion Calle Central", "Pintura Fachada Edificio Publico", "Instalaciones Electricas Municipales"],
+        "ti": ["Compra Agil Equipos de Red y Enlace Fibra", "Compra Agil Soporte TI y Servidores", "Compra Agil Notebooks Alumnos Escuelas", "Compra Agil Desarrollo Sistema Web Municipal"],
+        "salud": ["Compra Agil Insumos Clinicos Desechables", "Equipamiento Rayos X Hospital", "Jeringas y Guantes Desechables", "Camillas de Emergencia Hospitalaria"],
+        "construccion": ["Compra Agil Reparacion Techumbre Liceo Municipal", "Pavimentacion Calle Central", "Pintura Fachada Edificio Publico", "Instalaciones Electricas Municipales"],
         "oficina": ["Suministro Papel Papeleria Oficina Central", "Articulos de Escritorio General", "Archivadores y Carpetas", "Mobiliario Oficina Ergonomico"],
-        "aseo": ["Servicio Limpieza Edificios Estatales", "Bolsas de Basura y Cloro Industrial", "Detergente e Higiene Hospitalaria", "Desinfectantes Ambientales"],
-        "alimentos": ["Raciones de Contingencia Casinos", "Kits de Alimentacion Adulto Mayor", "Casino de Personal Servicio Salud", "Suministro Abarrotes y Lacteos"]
+        "aseo": ["Compra Agil Servicio Limpieza Edificios Estatales", "Bolsas de Basura y Cloro Industrial", "Detergente e Higiene Hospitalaria", "Desinfectantes Ambientales"],
+        "alimentos": ["Compra Agil Raciones de Contingencia Casinos", "Kits de Alimentacion Adulto Mayor", "Casino de Personal Servicio Salud", "Suministro Abarrotes y Lacteos"]
     }
     today = datetime.date.today()
     listado = []
@@ -148,7 +148,7 @@ def _get_fallback_tenders(date_str, estado):
         rub = random.choice(rubros_list)
         buyer = random.choice(buyers)
         region = random.choice(regions)
-        code_types = ["LE26", "L126", "LP26", "COT26"]
+        code_types = ["COT26"]
         code = f"{random.randint(1000,9999)}-{random.randint(1,200)}-{random.choice(code_types)}"
         pub_date = today + datetime.timedelta(days=random.randint(-3, 0))
         close_date = today + datetime.timedelta(days=random.randint(5, 18))

@@ -217,7 +217,7 @@ PROVEEDORES_LOCALES = [
 
 HISTORIAL_LICITACIONES = [
     {
-        "codigo": "2239-15-L126", "nombre": "Adquisicion de Servidores y Equipos de Red para Hospital San Borja",
+        "codigo": "2239-15-COT26", "nombre": "Adquisicion de Servidores y Equipos de Red para Hospital San Borja",
         "rubro": "ti", "rubro_nombre": "Tecnologia de la Informacion",
         "comprador": "Hospital Clinico San Borja Arriarán", "region": "Region Metropolitana",
         "presupuesto_estimado": 45000000, "adjudicado_a": "Sistemas Integrados Chile S.A.",
@@ -230,7 +230,7 @@ HISTORIAL_LICITACIONES = [
         ]
     },
     {
-        "codigo": "1123-2-LP26", "nombre": "Convenio Suministro Insumos Clinicos Desechables",
+        "codigo": "1123-2-COT26", "nombre": "Convenio Suministro Insumos Clinicos Desechables",
         "rubro": "salud", "rubro_nombre": "Salud e Insumos Medicos",
         "comprador": "Servicio de Salud Valparaiso San Antonio", "region": "Region de Valparaiso",
         "presupuesto_estimado": 12000000, "adjudicado_a": "Medica Sur SpA",
@@ -243,7 +243,7 @@ HISTORIAL_LICITACIONES = [
         ]
     },
     {
-        "codigo": "4815-162-SE26", "nombre": "Servicio de Pinturas y Reparacion Escuelas Basicas",
+        "codigo": "4815-162-COT26", "nombre": "Servicio de Pinturas y Reparacion Escuelas Basicas",
         "rubro": "construccion", "rubro_nombre": "Construccion y Obras Menores",
         "comprador": "Ilustre Municipalidad de Valparaiso", "region": "Region de Valparaiso",
         "presupuesto_estimado": 25000000, "adjudicado_a": "Constructora e Inmobiliaria Los Andes",
@@ -256,7 +256,7 @@ HISTORIAL_LICITACIONES = [
         ]
     },
     {
-        "codigo": "2245-12-L126", "nombre": "Suministro de Articulos de Escritorio y Papeleria 2026",
+        "codigo": "2245-12-COT26", "nombre": "Suministro de Articulos de Escritorio y Papeleria 2026",
         "rubro": "oficina", "rubro_nombre": "Oficina y Articulos de Escritorio",
         "comprador": "Subsecretaria de Educacion (MINEDUC)", "region": "Region Metropolitana",
         "presupuesto_estimado": 8000000, "adjudicado_a": "Libreria e Impresos Central SpA",
@@ -269,7 +269,7 @@ HISTORIAL_LICITACIONES = [
         ]
     },
     {
-        "codigo": "3011-88-LE26", "nombre": "Servicio de Aseo y Desinfeccion Hospital Concepcion",
+        "codigo": "3011-88-COT26", "nombre": "Servicio de Aseo y Desinfeccion Hospital Concepcion",
         "rubro": "aseo", "rubro_nombre": "Limpieza e Insumos Sanitarios",
         "comprador": "Servicio de Salud Concepcion", "region": "Region del Biobio",
         "presupuesto_estimado": 18000000, "adjudicado_a": "Servicios Generales Multiclean",
@@ -283,11 +283,11 @@ HISTORIAL_LICITACIONES = [
     }
 ]
 
-# Licitaciones activas y compras agiles con las que el motor de recomendacion trabajara
+# Lompra Agiles activas y compras agiles con las que el motor de recomendacion trabajara
 LICITACIONES_ACTIVAS = [
     {
-        "codigo": "1027-55-LE26", "nombre": "Adquisicion Notebooks y Tablet para Escuelas Municipales",
-        "tipo": "licitacion", "rubro": "ti", "rubro_nombre": "Tecnologia de la Informacion",
+        "codigo": "1027-55-COT26", "nombre": "Adquisicion Notebooks y Tablet para Escuelas Municipales",
+        "tipo": "compra_agil", "rubro": "ti", "rubro_nombre": "Tecnologia de la Informacion",
         "comprador": "Ilustre Municipalidad de Santiago", "region": "Region Metropolitana", "ciudad": "Santiago",
         "presupuesto": 28000000, "fecha_publicacion": "2026-06-01",
         "fecha_cierre": "2026-06-20", "fecha_estimada_adjudicacion": "2026-07-05",
@@ -296,8 +296,8 @@ LICITACIONES_ACTIVAS = [
                   {"producto": "Tablet Android 10 pulgadas", "cantidad": 20, "unidad": "Unidad"}]
     },
     {
-        "codigo": "2150-12-LP26", "nombre": "Convenio Marco Insumos Clinicos Desechables 2026-2027",
-        "tipo": "licitacion", "rubro": "salud", "rubro_nombre": "Salud e Insumos Medicos",
+        "codigo": "2150-12-COT26", "nombre": "Convenio Marco Insumos Clinicos Desechables 2026-2027",
+        "tipo": "compra_agil", "rubro": "salud", "rubro_nombre": "Salud e Insumos Medicos",
         "comprador": "Servicio de Salud Metropolitano Sur", "region": "Region Metropolitana", "ciudad": "Santiago",
         "presupuesto": 95000000, "fecha_publicacion": "2026-05-28",
         "fecha_cierre": "2026-06-25", "fecha_estimada_adjudicacion": "2026-07-15",
@@ -306,8 +306,8 @@ LICITACIONES_ACTIVAS = [
                   {"producto": "Mascarilla quirurgica tipo IIR", "cantidad": 2000, "unidad": "Caja"}]
     },
     {
-        "codigo": "4100-33-LE26", "nombre": "Reparacion y Pintura Edificio Municipalidad Temuco",
-        "tipo": "licitacion", "rubro": "construccion", "rubro_nombre": "Construccion y Obras Menores",
+        "codigo": "4100-33-COT26", "nombre": "Reparacion y Pintura Edificio Municipalidad Temuco",
+        "tipo": "compra_agil", "rubro": "construccion", "rubro_nombre": "Construccion y Obras Menores",
         "comprador": "Ilustre Municipalidad de Temuco", "region": "Region de La Araucania", "ciudad": "Temuco",
         "presupuesto": 22000000, "fecha_publicacion": "2026-06-02",
         "fecha_cierre": "2026-06-22", "fecha_estimada_adjudicacion": "2026-07-10",
@@ -316,8 +316,8 @@ LICITACIONES_ACTIVAS = [
                   {"producto": "Mano de obra especializacion pintura", "cantidad": 1, "unidad": "Servicio"}]
     },
     {
-        "codigo": "5520-22-L126", "nombre": "Suministro Articulos de Oficina y Papeleria Hospital Antofagasta",
-        "tipo": "licitacion", "rubro": "oficina", "rubro_nombre": "Oficina y Articulos de Escritorio",
+        "codigo": "5520-22-COT26", "nombre": "Suministro Articulos de Oficina y Papeleria Hospital Antofagasta",
+        "tipo": "compra_agil", "rubro": "oficina", "rubro_nombre": "Oficina y Articulos de Escritorio",
         "comprador": "Hospital Regional de Antofagasta", "region": "Region de Antofagasta", "ciudad": "Antofagasta",
         "presupuesto": 6500000, "fecha_publicacion": "2026-05-30",
         "fecha_cierre": "2026-06-18", "fecha_estimada_adjudicacion": "2026-07-02",
@@ -346,8 +346,8 @@ LICITACIONES_ACTIVAS = [
         "items": [{"producto": "Servicio de aseo profundo mensual", "cantidad": 3, "unidad": "Mes"}]
     },
     {
-        "codigo": "7833-44-LE26", "nombre": "Adquisicion Equipamiento Computacional Municipalidad Concepcion",
-        "tipo": "licitacion", "rubro": "ti", "rubro_nombre": "Tecnologia de la Informacion",
+        "codigo": "7833-44-COT26", "nombre": "Adquisicion Equipamiento Computacional Municipalidad Concepcion",
+        "tipo": "compra_agil", "rubro": "ti", "rubro_nombre": "Tecnologia de la Informacion",
         "comprador": "Ilustre Municipalidad de Concepcion", "region": "Region del Biobio", "ciudad": "Concepcion",
         "presupuesto": 15000000, "fecha_publicacion": "2026-06-02",
         "fecha_cierre": "2026-06-19", "fecha_estimada_adjudicacion": "2026-07-03",
@@ -356,8 +356,8 @@ LICITACIONES_ACTIVAS = [
                   {"producto": "Impresora laser monocromatica", "cantidad": 5, "unidad": "Unidad"}]
     },
     {
-        "codigo": "8900-15-LP26", "nombre": "Convenio Suministro Raciones Alimentarias Casino Hospital Iquique",
-        "tipo": "licitacion", "rubro": "alimentos", "rubro_nombre": "Alimentos y Raciones",
+        "codigo": "8900-15-COT26", "nombre": "Convenio Suministro Raciones Alimentarias Casino Hospital Iquique",
+        "tipo": "compra_agil", "rubro": "alimentos", "rubro_nombre": "Alimentos y Raciones",
         "comprador": "Hospital Regional de Iquique", "region": "Region de Tarapaca", "ciudad": "Iquique",
         "presupuesto": 65000000, "fecha_publicacion": "2026-05-25",
         "fecha_cierre": "2026-06-24", "fecha_estimada_adjudicacion": "2026-07-12",
@@ -366,8 +366,8 @@ LICITACIONES_ACTIVAS = [
                   {"producto": "Racion almuerzo 3 tiempos", "cantidad": 36500, "unidad": "Unidad"}]
     },
     {
-        "codigo": "9100-66-LE26", "nombre": "Mantension Infraestructura Vial y Aceras Municipalidad Antofagasta",
-        "tipo": "licitacion", "rubro": "construccion", "rubro_nombre": "Construccion y Obras Menores",
+        "codigo": "9100-66-COT26", "nombre": "Mantension Infraestructura Vial y Aceras Municipalidad Antofagasta",
+        "tipo": "compra_agil", "rubro": "construccion", "rubro_nombre": "Construccion y Obras Menores",
         "comprador": "Ilustre Municipalidad de Antofagasta", "region": "Region de Antofagasta", "ciudad": "Antofagasta",
         "presupuesto": 38000000, "fecha_publicacion": "2026-05-29",
         "fecha_cierre": "2026-06-21", "fecha_estimada_adjudicacion": "2026-07-08",
@@ -387,8 +387,8 @@ LICITACIONES_ACTIVAS = [
                   {"producto": "Mascarilla KN95 (caja 20u)", "cantidad": 50, "unidad": "Caja"}]
     },
     {
-        "codigo": "1350-200-LE26", "nombre": "Servicio de Aseo Edificio Intendencia Regional Valparaiso",
-        "tipo": "licitacion", "rubro": "aseo", "rubro_nombre": "Limpieza e Insumos Sanitarios",
+        "codigo": "1350-200-COT26", "nombre": "Servicio de Aseo Edificio Intendencia Regional Valparaiso",
+        "tipo": "compra_agil", "rubro": "aseo", "rubro_nombre": "Limpieza e Insumos Sanitarios",
         "comprador": "Ilustre Municipalidad de Valparaiso", "region": "Region de Valparaiso", "ciudad": "Valparaiso",
         "presupuesto": 14500000, "fecha_publicacion": "2026-06-01",
         "fecha_cierre": "2026-06-17", "fecha_estimada_adjudicacion": "2026-07-01",
@@ -396,8 +396,8 @@ LICITACIONES_ACTIVAS = [
         "items": [{"producto": "Servicio de aseo diario (6 meses)", "cantidad": 1, "unidad": "Servicio"}]
     },
     {
-        "codigo": "2240-14-LE26", "nombre": "Adquisicion Soporte Tecnico TI Mesa de Ayuda",
-        "tipo": "licitacion", "rubro": "ti", "rubro_nombre": "Tecnologia de la Informacion",
+        "codigo": "2240-14-COT26", "nombre": "Adquisicion Soporte Tecnico TI Mesa de Ayuda",
+        "tipo": "compra_agil", "rubro": "ti", "rubro_nombre": "Tecnologia de la Informacion",
         "comprador": "Subsecretaria de Educacion (MINEDUC)", "region": "Region Metropolitana", "ciudad": "Santiago",
         "presupuesto": 32000000, "fecha_publicacion": "2026-05-27",
         "fecha_cierre": "2026-06-23", "fecha_estimada_adjudicacion": "2026-07-09",
