@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -45,3 +45,12 @@ desktop.ini
 dist/
 build/
 *.egg-info/
+
+# Debug/test response files generated during development
+*_response.html
+*_sample.html
+search_*.html
+google_search_*.html
+curl_cffi_sample.html
+script_14.js
+data_fixtures.js

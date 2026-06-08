@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # dashboard/api_client.py
 import requests
 import datetime
@@ -44,12 +44,6 @@ def fetch_tender_detail(codigo):
     cache_key = f"detail_{codigo}"
     if cache_key in _cache:
         return _cache[cache_key]
-
-    # For COT codes, check local DB first
-    if _is_cot_code(codigo):
-        local = _find_in_local(codigo)
-        if local:
-            return local
 
     url = f"{BASE_URL}/licitaciones.json"
     params = {"codigo": codigo, "ticket": API_KEY}

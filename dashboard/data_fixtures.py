@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # dashboard/data_fixtures.py
 
 REGIONES_CHILE = [
@@ -285,6 +285,48 @@ HISTORIAL_LICITACIONES = [
 
 # Lompra Agiles activas y compras agiles con las que el motor de recomendacion trabajara
 LICITACIONES_ACTIVAS = [
+    {
+        "codigo": "1380-2909-COT26", "nombre": "TUBO CONICO 50 ML TAPA ROSCA ESTERIL, EMPAQUE INDIVIDUAL",
+        "tipo": "compra_agil", "rubro": "salud", "rubro_nombre": "Salud e Insumos Medicos",
+        "comprador": "Hospital Clinico de Temuco", "region": "Region de La Araucania", "ciudad": "Temuco",
+        "presupuesto": 450000, "fecha_publicacion": "2026-06-05",
+        "fecha_cierre": "2026-06-06", "fecha_estimada_adjudicacion": "2026-06-12",
+        "n_oferentes_esperados": 6, "descripcion": "Adquisicion urgente de tubos conicos de 50 ml con tapa rosca esteriles y empaque individual para laboratorio clinico.",
+        "items": [{"producto": "TUBO CONICO 50 ML TAPA ROSCA ESTERIL, EMPAQUE INDIVIDUAL", "cantidad": 500, "unidad": "Unidad"}]
+    },
+    {
+        "codigo": "3986-206-COT26", "nombre": "“ADQUISICION DE MATERIALES PARA BODEGA MUNICIPAL”",
+        "tipo": "compra_agil", "rubro": "construccion", "rubro_nombre": "Construccion y Obras Menores",
+        "comprador": "Ilustre Municipalidad de Corral", "region": "Region de Los Rios", "ciudad": "Corral",
+        "presupuesto": 1200000, "fecha_publicacion": "2026-06-05",
+        "fecha_cierre": "2026-06-08", "fecha_estimada_adjudicacion": "2026-06-14",
+        "n_oferentes_esperados": 5, "descripcion": "Compra agil para la adquisicion de materiales de construccion destinados a la bodega municipal de la comuna de Corral.",
+        "items": [
+            {"producto": "Plancha Zinc Acanalada 0.3mm 3.66m", "cantidad": 40, "unidad": "Unidad"},
+            {"producto": "Pino dimensionado 2x3 3.2m", "cantidad": 100, "unidad": "Unidad"}
+        ]
+    },
+    {
+        "codigo": "2080-520-COT26", "nombre": "PARACETAMOL 1 GR/100ML SOL.INFUSION EV",
+        "tipo": "compra_agil", "rubro": "salud", "rubro_nombre": "Salud e Insumos Medicos",
+        "comprador": "Hospital Regional Rancagua - HRR", "region": "Region del Libertador Bernardo O'Higgins", "ciudad": "Rancagua",
+        "presupuesto": 1800000, "fecha_publicacion": "2026-06-05",
+        "fecha_cierre": "2026-06-06", "fecha_estimada_adjudicacion": "2026-06-12",
+        "n_oferentes_esperados": 8, "descripcion": "Adquisicion rapida de Paracetamol 1 gr/100ml solucion para infusion endovenosa (EV) para el abastecimiento continuo de farmacia.",
+        "items": [{"producto": "PARACETAMOL 1 GR/100ML SOL.INFUSION EV", "cantidad": 600, "unidad": "Unidad"}]
+    },
+    {
+        "codigo": "2933-99-COT26", "nombre": "Insumos Talleres Programa FOMIL 2026-2027",
+        "tipo": "compra_agil", "rubro": "oficina", "rubro_nombre": "Oficina y Articulos de Escritorio",
+        "comprador": "I Municipalidad de Alhue", "region": "Region Metropolitana", "ciudad": "Alhue",
+        "presupuesto": 950000, "fecha_publicacion": "2026-06-05",
+        "fecha_cierre": "2026-06-08", "fecha_estimada_adjudicacion": "2026-06-15",
+        "n_oferentes_esperados": 4, "descripcion": "Adquisicion de insumos de libreria, manualidades y articulos de oficina para el desarrollo de los talleres del Programa FOMIL 2026-2027.",
+        "items": [
+            {"producto": "Kits de manualidades para talleres", "cantidad": 30, "unidad": "Kits"},
+            {"producto": "Carpetas archivadoras con clip", "cantidad": 100, "unidad": "Unidad"}
+        ]
+    },
     {
         "codigo": "1027-55-COT26", "nombre": "Adquisicion Notebooks y Tablet para Escuelas Municipales",
         "tipo": "compra_agil", "rubro": "ti", "rubro_nombre": "Tecnologia de la Informacion",
