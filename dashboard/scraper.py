@@ -369,3 +369,111 @@ def scrape_duckduckgo_results(query):
 
     return parsed_results
 
+
+def get_best_price(query, cantidad=1):
+    """
+    MeliPulse Chile — Motor de Cotización Inteligente.
+    Busca el mejor precio disponible para un ítem en MercadoLibre Chile.
+
+    Estrategia de selección:
+      1. Filtra productos con precio > 0
+      2. Prefiere productos con envío gratis (free_shipping=True)
+      3. Selecciona el de menor precio dentro del grupo preferido
+      4. Si no hay resultados de Meli, intenta otras tiendas chilenas (DDG)
+
+    Returns:
+        dict con keys: producto, cantidad, best_price, unit_price, permalink,
+                       image, source, delivery_days, free_shipping, is_full,
+                       total_cost, error (bool), error_message
+    """
+    base_result = {
+        "producto": query,
+        "cantidad": cantidad,
+        "best_price": 0,
+        "unit_price": 0,
+        "permalink": "",
+        "image": "",
+        "source": "fallback_estatico",
+        "delivery_days": None,
+        "free_shipping": False,
+        "is_full": False,
+        "total_cost": 0,
+        "error": False,
+        "error_message": ""
+    }
+
+    try:
+        meli_data = scrape_mercado_libre(query)
+
+        # Check for blocking error
+        if isinstance(meli_data, dict) and "error" in meli_data:
+            # Try DuckDuckGo fallback
+            ddg_results = scrape_duckduckgo_results(query)
+            priced_ddg = [r for r in ddg_results if r.get("price", 0) > 0]
+            if priced_ddg:
+                best = min(priced_ddg, key=lambda x: x["price"])
+                unit_price = best["price"]
+                base_result.update({
+                    "best_price": unit_price,
+                    "unit_price": unit_price,
+                    "permalink": best.get("permalink", ""),
+                    "image": "",
+                    "source": best.get("display_url", "tienda_chile"),
+                    "delivery_days": None,
+                    "free_shipping": False,
+                    "total_cost": unit_price * cantidad,
+                    "error": False
+                })
+            else:
+                base_result.update({
+                    "error": True,
+                    "error_message": meli_data.get("message", "Sin resultados disponibles")
+                })
+            return base_result
+
+        products = meli_data.get("results", [])
+        if not products:
+            base_result.update({
+                "error": True,
+                "error_message": f"No se encontraron resultados para: {query}"
+            })
+            return base_result
+
+        # Filter products with valid prices
+        priced = [p for p in products if p.get("price", 0) > 100]
+        if not priced:
+            base_result.update({
+                "error": True,
+                "error_message": "No se pudieron extraer precios válidos"
+            })
+            return base_result
+
+        # Prefer free shipping products
+        free_ship = [p for p in priced if p.get("free_shipping", False)]
+        pool = free_ship if free_ship else priced
+
+        # Pick the lowest price from the preferred pool
+        best = min(pool, key=lambda x: x["price"])
+        unit_price = best["price"]
+
+        base_result.update({
+            "best_price": unit_price,
+            "unit_price": unit_price,
+            "permalink": best.get("permalink", ""),
+            "image": best.get("image", ""),
+            "source": "MercadoLibre Chile",
+            "delivery_days": best.get("delivery_days"),
+            "free_shipping": best.get("free_shipping", False),
+            "is_full": best.get("is_full", False),
+            "total_cost": unit_price * cantidad,
+            "error": False,
+            "error_message": ""
+        })
+
+    except Exception as e:
+        base_result.update({
+            "error": True,
+            "error_message": str(e)
+        })
+
+    return base_result

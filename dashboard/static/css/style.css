@@ -1288,3 +1288,227 @@ body {
     word-break: break-word;
 }
 
+
+/* ============================================
+   MELIPULSE CHILE — Estilos de Cotización IA
+   ============================================ */
+
+/* Botón de cotización MercadoLibre */
+.btn-meli-quote {
+    background: linear-gradient(135deg, #FFE600 0%, #FFA500 100%);
+    color: #333;
+    font-weight: 700;
+    font-size: 0.82rem;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(255, 165, 0, 0.3);
+    white-space: nowrap;
+}
+.btn-meli-quote:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(255, 165, 0, 0.45);
+    background: linear-gradient(135deg, #FFE600 0%, #FF8C00 100%);
+}
+.btn-meli-quote:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-meli-quote .meli-logo-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #3483FA;
+    display: inline-block;
+    box-shadow: 0 0 0 2px #FFE600;
+}
+
+/* Badge de fuente del precio */
+.source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.source-badge.meli {
+    background: rgba(52, 131, 250, 0.15);
+    color: #3483FA;
+    border: 1px solid rgba(52, 131, 250, 0.3);
+}
+.source-badge.meli::before {
+    content: '●';
+    color: #FFE600;
+    font-size: 8px;
+}
+.source-badge.other-store {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.source-badge.fallback {
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--text-dark);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+.source-badge.error-src {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* Precio real destacado */
+.real-price-tag {
+    font-family: monospace;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #3483FA;
+}
+.real-price-tag.free-ship::after {
+    content: ' ✈';
+    font-size: 0.7rem;
+    color: var(--success);
+    font-weight: 600;
+}
+.real-price-tag.error-price {
+    color: var(--danger);
+    font-size: 0.78rem;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* Skeleton loader para filas en carga */
+@keyframes skeleton-shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+.item-loading-row td {
+    padding: 0.6rem 0.75rem;
+}
+.item-loading-row .skeleton-line {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, rgba(148,163,184,0.08) 25%, rgba(148,163,184,0.18) 50%, rgba(148,163,184,0.08) 75%);
+    background-size: 800px 100%;
+    animation: skeleton-shimmer 1.4s infinite linear;
+}
+.item-loading-row .skeleton-line.short { width: 60%; }
+.item-loading-row .skeleton-line.medium { width: 80%; }
+
+/* Banner de estado cotización (éxito / error / fallback) */
+.quote-status-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+.quote-status-banner.success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: var(--success);
+}
+.quote-status-banner.warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--warning);
+}
+.quote-status-banner.error {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+/* Imagen miniatura del producto MercadoLibre */
+.meli-product-thumb {
+    width: 34px;
+    height: 34px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    vertical-align: middle;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+/* Celda de producto con imagen y enlace */
+.meli-product-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 180px;
+}
+.meli-product-cell a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.15s;
+}
+.meli-product-cell a:hover {
+    color: #3483FA;
+    text-decoration: underline;
+}
+
+/* Indicador envío gratis */
+.free-ship-badge {
+    font-size: 0.6rem;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Barra de resumen de cotización total */
+.quote-summary-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    background: rgba(52, 131, 250, 0.06);
+    border: 1px solid rgba(52, 131, 250, 0.2);
+    border-radius: 8px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.quote-summary-bar .summary-item {
+    text-align: center;
+}
+.quote-summary-bar .summary-label {
+    font-size: 0.68rem;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+}
+.quote-summary-bar .summary-value {
+    font-size: 1rem;
+    font-weight: 800;
+    font-family: monospace;
+}
+.quote-summary-bar .summary-value.cost { color: var(--text-muted); }
+.quote-summary-bar .summary-value.bid  { color: #3483FA; }
+.quote-summary-bar .summary-value.margin { color: var(--success); }
+
