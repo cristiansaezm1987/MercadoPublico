@@ -148,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 } else {
                     logMsg(`[Servidor] Scraper de Mercado Libre completado con éxito.`, "success");
-                    logMsg(`[Servidor] Búsqueda web (DuckDuckGo) retornó ${otherResults.length} resultados de otras tiendas.`, "success");
+                    logMsg(`[Servidor] DuckDuckGo retornó ${otherResults.length} tiendas alternativas.`, "success");
                     
                     // Update connection state
                     statusPulse.className = "pulse-dot green";
