@@ -1042,7 +1042,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
 
         try {
-            const res = await fetch('/api/quote-items/', {
+            // Determine API base: if running from LiveServer/file, point to local Django
+            const API_BASE = (window.location.protocol === 'file:' || window.location.port === '5500') ? 'http://127.0.0.1:8000' : '';
+            
+            const res = await fetch(`${API_BASE}/api/quote-items/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items }),
