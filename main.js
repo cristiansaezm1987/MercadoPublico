@@ -1177,7 +1177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Build rows
-        const rows = matchData.items.map(it => {
+        const rows = matchData.items.map((it, index) => {
             const isMeli = it.source === 'MercadoLibre Chile';
             const isStatic = it.source === 'fallback_estatico' || it.source === 'static';
             const sourceClass = isMeli ? 'meli' : isStatic ? 'fallback' : 'other-store';
