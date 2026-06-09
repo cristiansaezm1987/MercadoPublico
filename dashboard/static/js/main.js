@@ -744,6 +744,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Carga inicial (vacia o placeholder)
         filterActiveCots();
+        
+        // Auto-run sync for better UX
+        setTimeout(() => {
+            runDataSync();
+        }, 800);
     }
 
     async function runDataSync() {
