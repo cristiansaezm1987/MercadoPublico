@@ -1360,24 +1360,162 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const wrapper = document.getElementById('costs-table-wrapper');
-        if (!wrapper) return;
+        if (!window.lastMatchData || !window.activeCotCode) return;
         
-        // Temporarily hide action buttons for PDF export
-        const buttonsToHide = wrapper.querySelectorAll('button');
-        buttonsToHide.forEach(b => b.style.display = 'none');
+        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
+        if (!cot) return;
+
+        const container = document.getElementById('pdf-export-container');
+        if (!container) return;
+
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('es-CL');
+        const validUntil = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000)).toLocaleDateString('es-CL');
         
+        // Sum total from suggested prices
+        let subtotal = 0;
+        window.lastMatchData.items.forEach(it => {
+            subtotal += (it.precioSugeridoTotal || 0); // Assuming suggested price is NET.
+        });
+        const iva = Math.round(subtotal * 0.19);
+        const total = subtotal + iva;
+
+        let rowsHtml = '';
+        window.lastMatchData.items.forEach(it => {
+            rowsHtml += `
+            <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:4px; font-size:11px; text-transform:uppercase;">${it.producto || '脥tem sin nombre'}</td>
+                <td style="padding:4px; font-size:11px; text-align:right;">${Math.round(it.precioSugeridoUnitario || 0).toLocaleString('es-CL')}</td>
+                <td style="padding:4px; font-size:11px; text-align:center;">${it.cantidad || 1}</td>
+                <td style="padding:4px; font-size:11px; text-align:center;"></td>
+                <td style="padding:4px; font-size:11px; text-align:right;">${Math.round(it.precioSugeridoTotal || 0).toLocaleString('es-CL')}</td>
+            </tr>`;
+        });
+
+        // The HTML template mirroring the provided image exactly
+        container.innerHTML = `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 800px; margin: 0 auto;">
+            
+            <!-- Header section -->
+            <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                <tr>
+                    <td style="width:50%; vertical-align:top;">
+                        <h1 style="margin:0; font-size:24px; color:#1a4b6c; display:flex; align-items:center;">
+                            <span style="font-size:40px; font-weight:900; letter-spacing:-2px; margin-right:5px;">TE</span> 
+                            <span style="font-size:16px; font-weight:bold; color:#333; line-height:1;">Tecno<br><span style="font-weight:normal; color:#666;">Express</span></span>
+                        </h1>
+                        <div style="font-size:11px; margin-top:5px; line-height:1.4;">
+                            Santiago - Chile - Talca<br>
+                            <a href="http://www.tecnoexpress.com" style="color:#000; text-decoration:underline;">www.tecnoexpress.com</a><br>
+                            +56 9 97913325 // +56 9 931376854<br>
+                            Rut: 77.043.858-6
+                        </div>
+                    </td>
+                    <td style="width:50%; vertical-align:top; text-align:right;">
+                        <h2 style="margin:0 0 10px 0; font-size:22px; color:#666; font-weight:normal;">COTIZACI脫N</h2>
+                        <table style="width:200px; float:right; border-collapse:collapse; font-size:11px; text-align:right;">
+                            <tr><td style="padding:2px 5px;">FECHA</td><td style="border:1px solid #000; padding:2px 5px; text-align:center;">${dateStr}</td></tr>
+                            <tr><td style="padding:2px 5px;">COTIZACI脫N #</td><td style="border:1px solid #000; padding:2px 5px; text-align:center;">${cot.codigo}</td></tr>
+                            <tr><td style="padding:2px 5px;">CLIENTE ID</td><td style="border:1px solid #000; padding:2px 5px; text-align:center;">${cot.comprador_region || 'CLIENTE'}</td></tr>
+                            <tr><td style="padding:2px 5px;">VALIDO HASTA</td><td style="border:1px solid #000; padding:2px 5px; text-align:center;">${validUntil}</td></tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Client Info -->
+            <div style="background:#999; color:#fff; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:2px;">CLIENTE</div>
+            <div style="font-size:12px; line-height:1.3; margin-bottom:20px;">
+                <div style="color:#0000ee; text-decoration:underline; font-weight:bold;">${cot.comprador || 'I.MUNICIPALIDAD'}</div>
+                <div>Regi贸n del ${cot.comprador_region || 'Maule'}</div>
+                <div style="font-weight:bold;">${cot.comprador_region || ''}</div>
+                <div>${cot.rut || '69.100.200-4'}</div>
+                <div style="font-weight:bold;">${cot.codigo}</div>
+            </div>
+
+            <!-- Items Table -->
+            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:10px;">
+                <thead>
+                    <tr style="background:#999; color:#fff;">
+                        <th style="padding:4px; text-align:left; border-right:1px solid #fff;">DESCRIPCI脫N</th>
+                        <th style="padding:4px; text-align:center; border-right:1px solid #fff; width:90px;">PRECIO UNIT.</th>
+                        <th style="padding:4px; text-align:center; border-right:1px solid #fff; width:50px;">CANT.</th>
+                        <th style="padding:4px; text-align:center; border-right:1px solid #fff; width:60px;">OTROS</th>
+                        <th style="padding:4px; text-align:center; width:90px;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
+
+            <!-- Footer area -->
+            <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                <tr>
+                    <td style="width:60%; vertical-align:top; padding-right:20px;">
+                        <!-- Bank Info -->
+                        <div style="background:#4b6e9b; color:#fff; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:5px;">DATOS BANCARIOS</div>
+                        <div style="font-size:11px; line-height:1.4; margin-bottom:15px; border-bottom:1px solid #000; padding-bottom:10px;">
+                            Tecnoexpress SpA<br>
+                            RUT:77.043.858-6<br>
+                            Banco Estado<br>
+                            Cuenta Vista: 43571636876<br>
+                            <a href="mailto:chiletecnoexpress@gmail.com" style="color:#0000ee;">chiletecnoexpress@gmail.com</a>
+                        </div>
+                        
+                        <!-- Terms -->
+                        <div style="background:#999; border:1px solid #333; color:#fff; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:5px;">T脡RMINOS Y CONDICIONES</div>
+                        <div style="border:1px solid #333; padding:5px; font-size:11px; line-height:1.5;">
+                            1. El pago ser谩 realizado a 30 d铆as contra factura recibida conforme.<br>
+                            2. Cotizaci贸n v谩lida por 30 d铆as.<br>
+                            3. Plazo de entrega 5 d铆as recibida OC.
+                        </div>
+                    </td>
+                    <td style="width:40%; vertical-align:top;">
+                        <!-- Totals -->
+                        <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:right;">
+                            <tr>
+                                <td style="padding:4px;">Subtotal</td>
+                                <td style="padding:4px; width:100px;">${subtotal.toLocaleString('es-CL')}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:4px;">Impuesto %</td>
+                                <td style="padding:4px; border:1px solid #000;">19%</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:4px;">Total Impuesto</td>
+                                <td style="padding:4px; border:1px solid #000;">$ ${iva.toLocaleString('es-CL')}</td>
+                            </tr>
+                            <tr><td colspan="2" style="height:10px;"></td></tr>
+                            <tr style="font-weight:bold; font-size:13px;">
+                                <td style="padding:4px;">TOTAL</td>
+                                <td style="padding:4px; border:1px solid #000; background:#ccc;">$ ${total.toLocaleString('es-CL')}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <div style="text-align:center; font-size:11px; margin-top:30px;">
+                Si usted tiene alguna duda sobre esta cotizaci贸n, por favor, p贸ngase en contacto con nosotros<br>
+                <a href="mailto:chiletecnoexpress@gmail.com" style="color:#0000ee; text-decoration:underline;">chiletecnoexpress@gmail.com</a><br>
+                <i style="font-size:13px; font-weight:bold;">Gracias por preferir TecnoExpress</i>
+            </div>
+        </div>`;
+
+        // Generate PDF
+        container.parentElement.style.display = 'block';
         const opt = {
             margin:       10,
-            filename:     'Cotizacion_Inteligente.pdf',
+            filename:     `Cotizacion_${cot.codigo}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         
-        html2pdf().set(opt).from(wrapper).save().then(() => {
-            // Restore buttons
-            buttonsToHide.forEach(b => b.style.display = '');
+        html2pdf().set(opt).from(container).save().then(() => {
+            container.parentElement.style.display = 'none';
+            container.innerHTML = ''; // clear
         });
     };
 
@@ -1432,6 +1570,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Cotizador Inteligente</h4>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <span style="font-size:0.7rem;color:var(--text-muted);">Cotizaci贸n r谩pida en el mercado nacional</span>
+                        <button class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem; display:flex; align-items:center; gap:4px; background:var(--success); border-color:var(--success);" onclick="window.saveBid()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            Guardar Licitaci贸n
+                        </button>
                         <button class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem; display:flex; align-items:center; gap:4px;" onclick="window.exportToPDF()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             Exportar PDF
@@ -1699,3 +1841,84 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 }); // End DOMContentLoaded
+
+    // --- BIDS REPOSITORY SYSTEM ---
+
+    window.saveBid = function() {
+        if (!window.lastMatchData || !window.activeCotCode) return;
+        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
+        if (!cot) return;
+
+        let bids = [];
+        try { bids = JSON.parse(localStorage.getItem('my_bids')) || []; } catch(e){}
+
+        const existingIndex = bids.findIndex(b => b.codigo === cot.codigo);
+        
+        let subtotal = 0;
+        window.lastMatchData.items.forEach(it => { subtotal += (it.precioSugeridoTotal || 0); });
+        const total = subtotal + Math.round(subtotal * 0.19);
+
+        const newBid = {
+            codigo: cot.codigo,
+            comprador: cot.comprador,
+            fecha: new Date().toISOString(),
+            total: total,
+            estado: 'Guardada'
+        };
+
+        if (existingIndex >= 0) {
+            bids[existingIndex] = newBid;
+        } else {
+            bids.push(newBid);
+        }
+
+        localStorage.setItem('my_bids', JSON.stringify(bids));
+        alert('Licitaci髇 guardada exitosamente en el Repositorio de Participaciones.');
+        window.renderBidsTable();
+    };
+
+    window.renderBidsTable = function() {
+        const tbody = document.getElementById('my-bids-table-body');
+        if (!tbody) return;
+
+        let bids = [];
+        try { bids = JSON.parse(localStorage.getItem('my_bids')) || []; } catch(e){}
+
+        if (bids.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">No tienes licitaciones guardadas a鷑.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = bids.map((b, i) => {
+            const d = new Date(b.fecha);
+            const dateStr = d.toLocaleDateString('es-CL') + ' ' + d.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+            
+            return \<tr style="border-bottom: 1px solid rgba(148,163,184,0.1);">
+                <td style="padding: 1rem; font-weight: 600; color: #3483FA;">\</td>
+                <td style="padding: 1rem;">\</td>
+                <td style="padding: 1rem; color: var(--text-muted); font-size: 0.85rem;">\</td>
+                <td style="padding: 1rem; font-weight: 700; font-family: monospace;">\</td>
+                <td style="padding: 1rem; text-align: center;">
+                    <span style="background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">\</span>
+                </td>
+                <td style="padding: 1rem; text-align: right;">
+                    <button class="btn" style="background: rgba(239, 68, 68, 0.15); color: #EF4444; border: none; padding: 4px 8px; font-size: 0.75rem;" onclick="window.deleteBid('\')">Eliminar</button>
+                </td>
+            </tr>\;
+        }).join('');
+    };
+
+    window.deleteBid = function(codigo) {
+        if (!confirm('縎eguro que deseas eliminar esta postulaci髇 del repositorio?')) return;
+        let bids = [];
+        try { bids = JSON.parse(localStorage.getItem('my_bids')) || []; } catch(e){}
+        bids = bids.filter(b => b.codigo !== codigo);
+        localStorage.setItem('my_bids', JSON.stringify(bids));
+        window.renderBidsTable();
+    };
+
+    // Initial render call if the view is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        window.renderBidsTable();
+    });
+
