@@ -1,256 +1,347 @@
+﻿
 <!DOCTYPE html>
-<html lang="es-CL">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeliPulse Chile | Visualizador de Mercado Libre en Tiempo Real</title>
-    <meta name="description" content="Busca y compara en tiempo real precios y tiempos de entrega de cualquier producto en Mercado Libre Chile mediante web scraping.">
+    <title>Mercado Inteligente COT | Copiloto de Compra Ágil Chile</title>
+    <meta name="description" content="Plataforma de inteligencia de negocios para Mercado Publico de Chile con IA de precios.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
-    <div class="app-wrapper">
-        <!-- TOP HEADER -->
-        <header class="main-header">
-            <div class="brand">
-                <div class="brand-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2 20h20"/>
-                        <path d="m5 14 4-4 3 3 5-5 3 3"/>
-                    </svg>
-                </div>
-                <div class="brand-text">
-                    <h1>MeliPulse <span>Chile</span></h1>
-                    <p>Real-Time Scraper Platform</p>
-                </div>
-            </div>
-            <div class="system-status">
-                <div class="status-indicator">
-                    <span class="pulse-dot green" id="status-pulse"></span>
-                    <span class="status-label" id="status-text">Conexión Activa</span>
-                </div>
-                <div class="channel-badge" id="data-channel-badge">
-                    Canal: Listo
-                </div>
-            </div>
-        </header>
-
-        <!-- HERO & SEARCH AREA -->
-        <main class="dashboard-content">
-            <section class="search-section">
-                <div class="search-container-box">
-                    <h2>¿Qué producto buscas hoy?</h2>
-                    <p class="search-subtitle">Buscamos en tiempo real en www.mercadolibre.cl obteniendo el precio más actualizado y la velocidad de despacho.</p>
-                    
-                    <form id="search-form" class="search-bar-form" onsubmit="return false;">
-                        <div class="search-input-wrapper">
-                            <div class="search-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8"/>
-                                    <path d="m21 21-4.3-4.3"/>
-                                </svg>
-                            </div>
-                            <input type="text" id="search-input" placeholder="Ej: iPhone 15, Notebook Gamer, Termo Stanley, Café en grano..." required autocomplete="off">
-                            <button type="submit" id="btn-search" class="search-btn">
-                                <span>Buscar</span>
-                                <div class="btn-spinner" id="search-btn-spinner"></div>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-
-            <!-- LOADING SCREEN / CONSOLE STATUS -->
-            <section id="loading-section" class="loading-section hidden">
-                <div class="loader-box">
-                    <div class="spinner-ring">
-                        <div></div><div></div><div></div><div></div>
-                    </div>
-                    <h3 id="loader-title">Iniciando Scraper en Tiempo Real</h3>
-                    <div class="terminal-box">
-                        <div class="terminal-header">
-                            <span class="term-dot red"></span>
-                            <span class="term-dot yellow"></span>
-                            <span class="term-dot green"></span>
-                            <span class="term-title">console_log.sh</span>
-                        </div>
-                        <div class="terminal-body" id="console-logs">
-                            <div class="log-line">> Esperando instrucción de búsqueda...</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- NO RESULTS / STARTING PLACEHOLDER -->
-            <section id="placeholder-section" class="placeholder-section">
-                <div class="placeholder-card">
-                    <div class="placeholder-illustration">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="m8 12 8-8"/>
-                            <path d="m12 16 4-4"/>
-                            <path d="m8 16 4-4"/>
-                        </svg>
-                    </div>
-                    <h3>Listo para escanear</h3>
-                    <p>Ingresa una palabra clave o modelo en la barra de arriba. Nuestro motor realizará una petición segura en tiempo real, parseará la estructura HTML de Mercado Libre y te mostrará un análisis de precios y entrega al instante.</p>
-                </div>
-            </section>
-
-            <!-- INSIGHTS GRID (VISIBLE ON SUCCESS) -->
-            <section id="insights-section" class="insights-section hidden">
-                <div class="insights-grid">
-                    <!-- Total Results KPI -->
-                    <div class="kpi-card total-kpi">
-                        <div class="kpi-header">
-                            <h4>Resultados Encontrados</h4>
-                            <div class="kpi-icon blue">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
-                                    <path d="m9 12 2 2 4-4"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="kpi-value" id="kpi-total-count">0</div>
-                        <div class="kpi-trend" id="kpi-source-text">Escaneado exitoso</div>
-                    </div>
-
-                    <!-- Average Price KPI -->
-                    <div class="kpi-card avg-price-kpi">
-                        <div class="kpi-header">
-                            <h4>Precio Promedio</h4>
-                            <div class="kpi-icon yellow">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="1" x2="12" y2="23"/>
-                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="kpi-value" id="kpi-avg-price">$0</div>
-                        <div class="kpi-trend neutral">Valor promedio del lote</div>
-                    </div>
-
-                    <!-- Min Max Range KPI -->
-                    <div class="kpi-card minmax-kpi">
-                        <div class="kpi-header">
-                            <h4>Rango de Precios</h4>
-                            <div class="kpi-icon red">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m3 16 4 4 4-4"/>
-                                    <path d="M7 20V4"/>
-                                    <path d="m21 8-4-4-4 4"/>
-                                    <path d="M17 4v16"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="kpi-price-range">
-                            <div class="range-row">
-                                <span class="range-label">Mínimo:</span>
-                                <span class="range-val green-text" id="kpi-min-price">$0</span>
-                            </div>
-                            <div class="range-row">
-                                <span class="range-label">Máximo:</span>
-                                <span class="range-val red-text" id="kpi-max-price">$0</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Delivery KPI -->
-                    <div class="kpi-card delivery-kpi">
-                        <div class="kpi-header">
-                            <h4>Tiempo de Entrega</h4>
-                            <div class="kpi-icon green">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="1" y="3" width="15" height="13" rx="2" ry="2"/>
-                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                                    <circle cx="5.5" cy="18.5" r="2.5"/>
-                                    <circle cx="18.5" cy="18.5" r="2.5"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="kpi-value" id="kpi-avg-delivery">0 días</div>
-                        <div class="kpi-trend positive" id="kpi-fastest-delivery">Entrega rápida disponible</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- RESULTS LIST SECTION -->
-            <section id="results-section" class="results-section hidden">
-                <div class="results-toolbar">
-                    <h3>Resultados del Escaneo</h3>
-                    <div class="toolbar-filters">
-                        <div class="filter-group">
-                            <label for="filter-origin">Origen</label>
-                            <select id="filter-origin">
-                                <option value="all">Todos los resultados</option>
-                                <option value="meli">Solo Mercado Libre</option>
-                                <option value="other">Otras Tiendas (Web)</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="sort-results">Ordenar por</label>
-                            <select id="sort-results">
-                                <option value="relevance">Relevancia</option>
-                                <option value="price_asc">Precio: Bajo a Alto</option>
-                                <option value="price_desc">Precio: Alto a Bajo</option>
-                                <option value="delivery_asc">Entrega más rápida</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="checkbox-container">
-                                <input type="checkbox" id="filter-free-shipping">
-                                <span class="checkbox-checkmark"></span>
-                                Envío Gratis
-                            </label>
-                        </div>
-                        <div class="filter-group">
-                            <label class="checkbox-container">
-                                <input type="checkbox" id="filter-full-shipping">
-                                <span class="checkbox-checkmark"></span>
-                                Envío FULL
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product Grid -->
-                <div class="products-grid" id="products-grid">
-                    <!-- Cards will be injected dynamically -->
-                </div>
-            </section>
-        </main>
-
-        <!-- COMPARISON DRAWER -->
-        <div class="comparison-drawer" id="comparison-drawer">
-            <div class="drawer-header">
-                <div class="drawer-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="20" x2="18" y2="10"/>
-                        <line x1="12" y1="20" x2="12" y2="4"/>
-                        <line x1="6" y1="20" x2="6" y2="14"/>
-                    </svg>
-                    <h3>Comparador de Productos (<span id="compare-count">0</span>/4)</h3>
-                </div>
-                <div class="drawer-actions">
-                    <button class="btn-text" id="btn-clear-compare">Limpiar</button>
-                    <button class="drawer-toggle-btn" id="btn-toggle-drawer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="18 15 12 9 6 15"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="drawer-body">
-                <div class="comparison-grid" id="comparison-grid">
-                    <!-- Comparison columns will be injected dynamically -->
-                </div>
-            </div>
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+      </div>
+      <div>
+        <h1>Mercado Inteligente</h1>
+        <span>AI Copilot</span>
+      </div>
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item active" data-tab="tab-dashboard">
+        <a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li class="nav-item" data-tab="tab-rubros">
+        <a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          Analisis de Rubros
+        </a>
+      </li>
+      <li class="nav-item" data-tab="tab-recommend">
+        <a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          Buscador Inteligente COT
+        </a>
+      </li>
+      <li class="nav-item" data-tab="tab-simulator">
+        <a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          Simulador de Precios
+        </a>
+      </li>
+      <li class="nav-item" data-tab="tab-suppliers">
+        <a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><path d="M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
+          Proveedores Locales
+        </a>
+      </li>
+      
+    </ul>
+    <div class="sidebar-footer">
+      <div class="api-badge">
+        <div class="api-badge-title">API Mercado Publico Chile</div>
+        <div class="api-badge-key">E7F3...490A</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:0.65rem;color:var(--success);margin-top:4px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;"></span>
+          Conexion Activa (HTTPS)
         </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="top-header">
+      <div class="header-title">
+        <h2 id="page-title">Panel de Control Inteligente</h2>
+        <p id="page-subtitle">Monitoreo de competencia, simulacion de ofertas y optimizacion de margenes.</p>
+      </div>
+      <div class="user-profile">
+        <div class="company-logo">M</div>
+        <span class="company-name">Mi Empresa (Rubros Completos)</span>
+      </div>
+    </header>
+
+    <!-- TAB DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div class="grid-kpi">
+        <div class="card kpi-card indigo">
+          <div class="kpi-details"><h3>Compras Ágiles Activas</h3><div class="kpi-value">127</div><div class="kpi-trend positive"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>+12% vs mes anterior</div></div>
+          <div class="kpi-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        </div>
+        <div class="card kpi-card cyan">
+          <div class="kpi-details"><h3>Tasa de Éxito COT</h3><div class="kpi-value">34.2%</div><div class="kpi-trend positive"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>+5.1% con IA</div></div>
+          <div class="kpi-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+        </div>
+        <div class="card kpi-card violet">
+          <div class="kpi-details"><h3>Ahorro Estimado COT</h3><div class="kpi-value">$2.4M</div><div class="kpi-trend neutral">Promedio por licitacion</div></div>
+          <div class="kpi-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        </div>
+        <div class="card kpi-card emerald">
+          <div class="kpi-details"><h3>ROI Estimado COT</h3><div class="kpi-value">312%</div><div class="kpi-trend positive"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>Retorno anualizado</div></div>
+          <div class="kpi-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><h3 class="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Potencial de Rubros por Score IA</h3></div><div id="chart-rubros-overview" style="height:300px;"></div></div>
+        <div class="card"><div class="card-header"><h3 class="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Distribucion del Mercado por Volumen</h3></div><div id="chart-market-share" style="height:300px;"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Últimas Compras Ágiles Analizadas</h3></div>
+        <div class="table-container">
+          <table><thead><tr><th>Codigo</th><th>Nombre Compra Ágil</th><th>Rubro</th><th>Comprador</th><th>Publicacion</th><th>Cierre</th><th>Presupuesto</th><th>Adjudicado a</th><th>Precio Adj.</th></tr></thead>
+          <tbody id="recent-tenders-body">
+            <tr><td colspan="9" style="text-align:center;color:var(--text-dark);">Cargando compras ágiles recientes...</td></tr>
+          </tbody></table>
+        </div>
+      </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="main.js?v=2"></script>
+    <!-- TAB RUBROS -->
+    <div id="tab-rubros" class="tab-content">
+      <div class="card" style="margin-bottom:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+          <div><h3 style="font-family:var(--font-heading);font-size:1.3rem;font-weight:700;">Oportunidades COT por Rubro</h3><p style="color:var(--text-muted);font-size:0.85rem;margin-top:2px;">Analiza y clasifica rubros de Mercado Publico por probabilidad de adjudicacion por region.</p></div>
+          <div class="form-group" style="margin-bottom:0;width:280px;">
+            <label for="filter-region-rubros">Filtrar por Region</label>
+            <select id="filter-region-rubros"></select>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><h3 class="card-title">Comparacion de Parametros Clave</h3></div><div id="chart-rubros-radar" style="height:320px;"></div></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Matriz de Probabilidad y Competencia</h3></div>
+          <div class="table-container"><table><thead><tr><th>Rubro</th><th>Score IA</th><th>Competidores</th><th>Tasa Adj.</th><th>Margen</th><th>Dificultad</th></tr></thead><tbody id="rubros-table-body"></tbody></table></div>
+        </div>
+      </div>
+      <div class="alert-box"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><div class="alert-box-text"><h4>Recomendacion de Copiloto IA</h4><p>Los rubros con Score superior a 75 tienen baja densidad de competidores y altos margenes relativos. Se sugiere priorizar postulaciones en estos sectores para maximizar adjudicaciones.</p></div></div>
+    </div>
+
+    <!-- TAB RECOMENDACIONES IA (Buscador Inteligente COT) -->
+    <div id="tab-recommend" class="tab-content">
+      <div class="grid-2" style="grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <!-- Card de Parametros y Busqueda -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              Búsqueda Inteligente de Compras Ágiles (COT)
+            </h3>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:1rem;">Filtre por rubro y región para listar las compras ágiles activas y analizar el histórico del mercado.</p>
+          
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="rec-rubro">Filtrar por Rubro</label>
+              <select id="rec-rubro"><option value="">-- Todos los rubros --</option></select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="rec-region">Filtrar por Región</label>
+              <select id="rec-region"><option value="">-- Todas las regiones --</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Sincronizador de Datos API -->
+        <div class="card" style="margin-bottom:0; display: flex; flex-direction: column; justify-content: space-between;">
+          <div class="card-header" style="margin-bottom: 0.5rem; padding-bottom: 0;">
+            <h3 class="card-title" style="font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+              <span class="pulse" style="width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></span>
+              Lector Histórico API Mercado Público
+            </h3>
+          </div>
+          <div class="sync-container">
+            <div class="sync-years-grid">
+              <label class="sync-checkbox-label"><input type="checkbox" class="sync-year" value="2023" checked> 2023</label>
+              <label class="sync-checkbox-label"><input type="checkbox" class="sync-year" value="2024" checked> 2024</label>
+              <label class="sync-checkbox-label"><input type="checkbox" class="sync-year" value="2025" checked> 2025</label>
+              <label class="sync-checkbox-label"><input type="checkbox" class="sync-year" value="2026" checked> 2026</label>
+            </div>
+            <button class="btn" id="btn-sync-api" style="width:100%; font-size: 0.85rem; padding: 0.5rem 1rem;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Refrescar Lectura de Datos
+            </button>
+            <div class="progress-bar-wrapper" id="sync-progress-wrapper">
+              <div class="progress-bar-fill" id="sync-progress-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consola de Logs y Progreso -->
+      <div class="console-log" id="sync-console-log"></div>
+
+      <!-- Split Layout de Resultados y Analitica -->
+      <div class="cot-split-layout">
+        <!-- Columna Izquierda: Compras Agiles Activas a las que se puede postular -->
+        <div class="card" style="margin-bottom:0; display:flex; flex-direction:column; min-height: 500px;">
+          <div class="card-header" style="justify-content: space-between; border-bottom: 1px solid rgba(148,163,184,0.1); padding-bottom: 0.75rem;">
+            <h3 class="card-title">Compras Ágiles Disponibles (COTs)</h3>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="cot-active-count">0 encontradas</span>
+          </div>
+          <!-- Controles de ordenamiento y filtrado por fecha -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(148,163,184,0.08); background: rgba(148, 163, 184, 0.02);">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="cot-sort-by" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Ordenar por</label>
+              <select id="cot-sort-by" style="font-size: 0.75rem; padding: 0.3rem 0.5rem; background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.15); border-radius: 4px; color: var(--text-light); width: 100%;">
+                <option value="cierre_asc">Fecha de Cierre (Próximas primero)</option>
+                <option value="pub_desc">Fecha de Publicación (Recientes primero)</option>
+                <option value="presupuesto_desc">Presupuesto (Mayor primero)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="cot-date-filter" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Filtro Temporal</label>
+              <select id="cot-date-filter" style="font-size: 0.75rem; padding: 0.3rem 0.5rem; background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.15); border-radius: 4px; color: var(--text-light); width: 100%;">
+                <option value="all">Todas las online</option>
+                <option value="closing_soon">Cierran pronto (≤ 3 días)</option>
+                <option value="recently_pub">Publicadas esta semana</option>
+              </select>
+            </div>
+          </div>
+          <div class="cot-list-container" id="cot-active-list" style="margin-top:1rem;">
+            <div style="text-align:center; color:var(--text-dark); padding:3rem;">Seleccione los años de interés y haga clic en "Refrescar Lectura" para sincronizar la base de datos de compras ágiles.</div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Panel de Inteligencia y Ultimos Adjudicados -->
+        <div class="card" style="margin-bottom:0; display: flex; flex-direction: column;" id="cot-analytics-panel">
+          <div class="analytics-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-dark); margin-bottom:1rem;"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+            <h4>Inteligencia de Precios Compra Ágil (COT)</h4>
+            <p style="font-size:0.85rem; max-width:320px; margin-top:0.25rem;">Seleccione una compra ágil activa del listado de la izquierda para desplegar el panel de inteligencia diaria, análisis de costos con proveedores y el historial de adjudicados.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB SIMULATOR -->
+    <div id="tab-simulator" class="tab-content">
+      <div class="grid-custom-simulator">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Simulador de Oferta COT</h3></div>
+          <form id="simulator-form" onsubmit="return false;">
+            <div class="form-group">
+              <label for="sim-cost">Costo Base del Producto/Servicio (CLP)</label>
+              <input type="number" id="sim-cost" placeholder="Ej: 1500000" required min="1">
+            </div>
+            <div class="form-group">
+              <label for="sim-rubro">Rubro Mercado Publico</label>
+              <select id="sim-rubro" required></select>
+            </div>
+            <div class="form-group">
+              <label for="sim-region">Region del Comprador</label>
+              <select id="sim-region" required></select>
+            </div>
+            <div class="form-group">
+              <label for="sim-comprador">Comprador Objetivo (Opcional)</label>
+              <select id="sim-comprador"><option value="">-- Todos los compradores --</option></select>
+            </div>
+            <button type="submit" class="btn" id="btn-simulate" style="width:100%;margin-top:1rem;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              Calcular Oferta COT Optima
+            </button>
+          </form>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+          <div class="grid-kpi">
+            <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+              <span style="font-size:0.75rem;text-transform:uppercase;color:var(--text-muted);font-weight:600;margin-bottom:0.25rem;">Precio Sugerido IA</span>
+              <div class="kpi-value" id="sim-suggested-price" style="font-size:1.6rem;color:var(--secondary);font-family:monospace;">$0</div>
+              <span style="font-size:0.7rem;color:var(--text-dark);margin-top:0.25rem;" id="sim-multiplier">Multiplicador: 1.0x</span>
+            </div>
+            <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+              <span style="font-size:0.75rem;text-transform:uppercase;color:var(--text-muted);font-weight:600;margin-bottom:0.25rem;">Probabilidad de Adjudicacion</span>
+              <div class="prob-meter-value" id="sim-probability" style="font-size:2.2rem;">0%</div>
+            </div>
+            <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+              <span style="font-size:0.75rem;text-transform:uppercase;color:var(--text-muted);font-weight:600;margin-bottom:0.25rem;">Margen Estimado</span>
+              <div class="kpi-value" id="sim-margin" style="font-size:1.6rem;color:var(--success);">0%</div>
+              <span style="font-size:0.7rem;color:var(--text-dark);margin-top:0.25rem;" id="sim-margin-pesos">$0</span>
+            </div>
+          </div>
+          <div class="card"><div class="card-header"><h3 class="card-title">Curva de Sensibilidad: Precio vs Probabilidad</h3></div><div id="chart-sensitivity" style="height:250px;"></div></div>
+          <div class="card"><div class="card-header"><h3 class="card-title">Simulacion de Competidores Historicos</h3></div>
+            <div class="table-container"><table><thead><tr><th>Competidor</th><th>Precio Estimado</th><th>Tasa Exito</th><th>Reputacion</th></tr></thead><tbody id="sim-competitors-body"><tr><td colspan="4" style="text-align:center;color:var(--text-dark);">Realice una simulacion para cargar la competencia.</td></tr></tbody></table></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB SUPPLIERS -->
+    <div id="tab-suppliers" class="tab-content">
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Buscador Inteligente de Proveedores de Insumos</h3></div>
+        <form id="suppliers-form" onsubmit="return false;" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr)) 150px;gap:1rem;align-items:flex-end;margin-top:1rem;">
+          <div class="form-group" style="margin-bottom:0;"><label for="sup-rubro">Rubro</label><select id="sup-rubro" required></select></div>
+          <div class="form-group" style="margin-bottom:0;"><label for="sup-region">Region Proveedor</label><select id="sup-region" required></select></div>
+          <div class="form-group" style="margin-bottom:0;"><label for="sup-cost">Costo Actual (CLP)</label><input type="number" id="sup-cost" placeholder="Ej: 500000" required min="1"></div>
+          <button type="submit" class="btn" id="btn-find-suppliers" style="width:100%;">Buscar</button>
+        </form>
+      </div>
+      <div class="grid-3" id="suppliers-results"></div>
+    </div>
+
+    <!-- TAB API -->
+    <div id="tab-api" class="tab-content">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+          <div><div class="live-badge"><span class="pulse"></span>Conexion API Mercado Publico</div><p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px;">Busqueda directa de licitaciones y compras agiles en tiempo real. Ingrese un codigo (ej: 3874-128-COT26) o cargue los de hoy.</p></div>
+          <button class="btn btn-secondary btn-sm" id="btn-api-today">Licitaciones de Hoy</button>
+        </div>
+        <div class="api-explorer-header" style="margin-top:1.5rem;">
+          <div class="search-input-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="api-search-code" placeholder="Codigo licitacion o compra agil (ej: 3874-128-COT26, 1027-55-LE26)...">
+          </div>
+          <button class="btn" id="btn-api-search">Buscar Codigo</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Resultados de Busqueda</h3></div>
+        <div class="table-container">
+          <table><thead><tr><th>Tipo</th><th>Codigo</th><th>Nombre Compra Ágil</th><th>Comprador</th><th>Region</th><th>Publicacion</th><th>Cierre</th><th>Monto Estimado</th><th>Estado</th><th>Accion</th></tr></thead>
+          <tbody id="api-results-body"><tr><td colspan="10" style="text-align:center;color:var(--text-dark);">Busque un codigo o presione "Licitaciones de Hoy".</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="tender-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-tender-title">Detalle de la Licitacion</h3>
+      <button class="modal-close" id="btn-close-modal"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="data_fixtures.js"></script>
+<script src="main.js?v=3"></script>
 </body>
 </html>
+
