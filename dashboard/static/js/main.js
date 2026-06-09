@@ -954,6 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === codigo);
         if (!cot) return;
 
+        cot.scoreIA = cot.scoreIA || calculate_cot_score(cot);
         renderCotAnalytics(cot);
     };
 
