@@ -1332,6 +1332,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const listHtml = activeData.map((r, i) => {
             const imgHtml = `<div style="width:50px; height:50px; background:rgba(255,255,255,0.1); border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">${r.image ? `<img src="${r.image}" style="width:100%; height:100%; object-fit:contain; background:#fff;">` : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" opacity="0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`}</div>`;
+            const priceHtml = r.price > 0 
+                ? `<div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${formatCLP(r.price)}</div>`
+                : `<div style="font-weight:600; color:var(--text-muted); font-size:0.75rem;">Precio referencial (Consultar en sitio)</div>`;
             return `<div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; border:1px solid rgba(148,163,184,0.2); border-radius:8px; background:rgba(30,41,59,0.5); margin-bottom:8px;">
                 ${imgHtml}
                 <div style="flex:1;">
@@ -1342,7 +1345,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${formatCLP(r.price || 0)}</div>
+                    ${priceHtml}
                     <button class="btn btn-primary" style="padding:4px 12px; font-size:0.75rem; margin-top:0.25rem;" onclick="window.selectQuoteOption(${itemIndex}, ${r.price || 0}, '${r.title.replace(/'/g, "\\'")}', '${r.link}', '${r.image || ''}', '${r.source}', ${r.free_shipping ? 'true' : 'false'})">Seleccionar</button>
                 </div>
             </div>`;

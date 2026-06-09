@@ -321,6 +321,11 @@ def scrape_duckduckgo_results(query):
                 if "mercadolibre" in link_lower or "mercadopago" in link_lower:
                     continue
 
+                # --- Skip Cloudflare / Access Denied generic titles ---
+                title_lower = title.lower()
+                if "connection denied" in title_lower or "access denied" in title_lower or "cloudflare" in title_lower or "403 forbidden" in title_lower:
+                    continue
+
                 # --- Deduplicate by domain ---
                 try:
                     parsed_href = urllib.parse.urlparse(link)
