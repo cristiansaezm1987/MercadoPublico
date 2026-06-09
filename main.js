@@ -147,9 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateHeaderTitles(tabId) {
         const map = {
             'tab-dashboard': ['Panel de Control Inteligente COT', 'Monitoreo de competencia de compras ágiles, simulaciones y optimización de márgenes.'],
-            'tab-rubros': ['Matriz de Oportunidades por Rubro', 'Detección automática de rubros de Compra Ãgil con mayor tasa de adjudicación.'],
-            'tab-recommend': ['Búsqueda Inteligente de Compras Ãgiles (COT)', 'Sincronice el histórico, analice la competencia anterior y visualice adjudicaciones similares.'],
-            'tab-simulator': ['Simulador de Precios COT', 'Calcula la probabilidad de éxito de tus ofertas para procesos Compra Ãgil.'],
+            'tab-rubros': ['Matriz de Oportunidades por Rubro', 'Detección automática de rubros de Compra Ágil con mayor tasa de adjudicación.'],
+            'tab-recommend': ['Búsqueda Inteligente de Compras Ágiles (COT)', 'Sincronice el histórico, analice la competencia anterior y visualice adjudicaciones similares.'],
+            'tab-simulator': ['Simulador de Precios COT', 'Calcula la probabilidad de éxito de tus ofertas para procesos Compra Ágil.'],
             'tab-suppliers': ['Buscador de Proveedores Estratégicos', 'Encuentra distribuidores con mejores precios para abastecer tus postulaciones COT.'],
         };
         const t = document.getElementById('page-title');
@@ -812,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Generar log realista
                 const randCots = Math.floor(Math.random() * 80) + 30;
                 const dateParam = `01${String(Math.floor(Math.random()*12)+1).padStart(2, '0')}${year}`;
-                logMsg(`  GET /licitaciones.json?fecha=${dateParam}&estado=adjudicada - 200 OK (${t}: Procesadas ${randCots} Compras Ãgiles)`);
+                logMsg(`  GET /licitaciones.json?fecha=${dateParam}&estado=adjudicada - 200 OK (${t}: Procesadas ${randCots} Compras Ágiles)`);
                 await sleep(Math.floor(Math.random() * 200) + 150);
             }
             logMsg(`âœ” Año ${year} cargado con éxito en memoria caché.`);
@@ -1088,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalBid += itemTotalBid;
 
                 return {
-                    producto: q.producto || originalItem.producto || `Ãtem ${index + 1}`,
+                    producto: q.producto || originalItem.producto || `Ítem `,
                     cantidad: qty,
                     unidad: originalItem.unidad || 'Unidad',
                     proveedor: q.source || 'MercadoLibre Chile',
@@ -1144,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="table-container">
                 <table class="cost-table">
                     <thead><tr>
-                        <th>Ãtem Solicitado</th><th>Cant.</th><th>Fuente / Proveedor</th>
+                        <th>Ítem Solicitado</th><th>Cant.</th><th>Fuente / Proveedor</th>
                         <th>Precio Unit. Real</th><th>Costo Total</th>
                         <th>Precio Sugerido</th><th>Total Oferta</th><th>Margen Est.</th><th>Acciones</th>
                     </tr></thead>
@@ -1231,7 +1231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="table-container">
                 <table class="cost-table">
                     <thead><tr>
-                        <th>Ãtem / Producto</th><th>Cant.</th><th>Fuente</th>
+                        <th>Ítem / Producto</th><th>Cant.</th><th>Fuente</th>
                         <th>Precio Unit. Real</th><th>Costo Total</th>
                         <th>Precio Sugerido</th><th>Total Oferta</th><th>Margen Est.</th><th>Acciones</th>
                     </tr></thead>
@@ -1384,7 +1384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.lastMatchData.items.forEach(it => {
             rowsHtml += `
             <tr style="border-bottom:1px solid #eee;">
-                <td style="padding:4px; font-size:11px; text-transform:uppercase;">${it.producto || 'Ãtem sin nombre'}</td>
+                <td style="padding:4px; font-size:11px; text-transform:uppercase;">${it.producto || 'Ítem sin nombre'}</td>
                 <td style="padding:4px; font-size:11px; text-align:right;">${Math.round(it.precioSugeridoUnitario || 0).toLocaleString('es-CL')}</td>
                 <td style="padding:4px; font-size:11px; text-align:center;">${it.cantidad || 1}</td>
                 <td style="padding:4px; font-size:11px; text-align:center;"></td>
