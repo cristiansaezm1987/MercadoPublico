@@ -179,6 +179,10 @@ def scrape_mercado_libre(query):
                 if "poly_full" in str(item):
                     is_full = True
                 
+                # Filter out international products
+                if "internacional" in title.lower() or "internacional" in shipping_text.lower():
+                    continue
+                
                 # Parse days
                 delivery_days, free_shipping = parse_delivery_days(shipping_text)
                 

@@ -1139,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
             <div class="quote-status-banner warning" id="meli-status-banner">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite;flex-shrink:0;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg>
-                Buscando precios en MercadoLibre Chile para ${items.length} ítem${items.length !== 1 ? 's' : ''}...
+                Buscando opciones en el mercado para ${items.length} ítem${items.length !== 1 ? 's' : ''}...
             </div>
             <div class="table-container">
                 <table class="cost-table">
@@ -1165,7 +1165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isRealtime && itemsWithError === 0) {
             bannerHtml = `<div class="quote-status-banner success">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
-                ${matchData.items.length} ítem${matchData.items.length !== 1 ? 's' : ''} cotizados en tiempo real desde MercadoLibre Chile.
+                ${matchData.items.length} ítem${matchData.items.length !== 1 ? 's' : ''} cotizados en tiempo real mediante Inteligencia de Precios.
             </div>`;
         } else if (isRealtime && itemsWithError > 0) {
             bannerHtml = `<div class="quote-status-banner warning">
@@ -1315,9 +1315,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const resultsContainer = document.getElementById('quote-search-results');
         const activeData = window.quoteSearchResultsCache[window.currentQuoteTab] || [];
         
-        const tabsHtml = `<div style="display:flex; gap:1rem; border-bottom:1px solid rgba(148,163,184,0.2); margin-bottom:1rem; padding-bottom:0.5rem;">
-            <button onclick="window.currentQuoteTab='meli'; window.renderQuoteResults(${itemIndex}, ${isDemo})" style="background:transparent; border:none; font-weight:600; cursor:pointer; padding:0 0.5rem; color:${window.currentQuoteTab === 'meli' ? '#3483FA' : 'var(--text-muted)'}; border-bottom:${window.currentQuoteTab === 'meli' ? '2px solid #3483FA' : 'none'};">Mercado Libre (${window.quoteSearchResultsCache.meli.length})</button>
-            <button onclick="window.currentQuoteTab='other'; window.renderQuoteResults(${itemIndex}, ${isDemo})" style="background:transparent; border:none; font-weight:600; cursor:pointer; padding:0 0.5rem; color:${window.currentQuoteTab === 'other' ? '#10B981' : 'var(--text-muted)'}; border-bottom:${window.currentQuoteTab === 'other' ? '2px solid #10B981' : 'none'};">Otras Páginas (${window.quoteSearchResultsCache.other.length})</button>
+        const tabsHtml = `<div style="display:flex; gap:1rem; align-items:center; border-bottom:1px solid rgba(148,163,184,0.2); margin-bottom:1rem; padding-bottom:0.75rem;">
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Origen de los resultados:</label>
+            <select onchange="window.currentQuoteTab=this.value; window.renderQuoteResults(${itemIndex}, ${isDemo})" style="flex:1; background:rgba(30,41,59,0.8); border:1px solid rgba(148,163,184,0.2); color:var(--text-light); padding:0.4rem; border-radius:4px; font-size:0.8rem; cursor:pointer;">
+                <option value="meli" ${window.currentQuoteTab === 'meli' ? 'selected' : ''}>Mercado Libre (${window.quoteSearchResultsCache.meli.length} opciones)</option>
+                <option value="other" ${window.currentQuoteTab === 'other' ? 'selected' : ''}>Top 20 Recomendadas por Google Nacional (${window.quoteSearchResultsCache.other.length} opciones)</option>
+            </select>
         </div>`;
 
         let demoHtml = isDemo ? `<div style="background:rgba(234,179,8,0.1); color:var(--warning); padding:8px; border-radius:4px; font-size:0.75rem; text-align:center; margin-bottom:1rem;">Modo demostración offline. Mostrando alternativas simuladas.</div>` : '';
@@ -1346,6 +1349,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
         
         resultsContainer.innerHTML = tabsHtml + demoHtml + listHtml;
+    };
+
+    window.exportToPDF = function() {
+        if (typeof html2pdf === 'undefined') {
+            alert("El generador de PDF aún se está cargando. Inténtelo en unos segundos.");
+            return;
+        }
+        
+        const wrapper = document.getElementById('costs-table-wrapper');
+        if (!wrapper) return;
+        
+        // Temporarily hide action buttons for PDF export
+        const buttonsToHide = wrapper.querySelectorAll('button');
+        buttonsToHide.forEach(b => b.style.display = 'none');
+        
+        const opt = {
+            margin:       10,
+            filename:     'Cotizacion_Inteligente.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        
+        html2pdf().set(opt).from(wrapper).save().then(() => {
+            // Restore buttons
+            buttonsToHide.forEach(b => b.style.display = '');
+        });
     };
 
     window.selectQuoteOption = function(itemIndex, price, title, link, image, source, freeShipping) {
@@ -1396,9 +1426,13 @@ document.addEventListener('DOMContentLoaded', () => {
         containerEl.innerHTML = `
             <div class="card" style="padding:0.75rem; margin-bottom:0;">
                 <div class="card-header" style="padding:0.5rem 0 0.75rem 0; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-                    <h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Cotización de Ítems con MeliPulse Chile</h4>
+                    <h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Cotizador Inteligente</h4>
                     <div style="display:flex;gap:8px;align-items:center;">
-                        <span style="font-size:0.7rem;color:var(--text-muted);">Cruza ítems COT con precios reales de MercadoLibre</span>
+                        <span style="font-size:0.7rem;color:var(--text-muted);">Cotización rápida en el mercado nacional</span>
+                        <button class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem; display:flex; align-items:center; gap:4px;" onclick="window.exportToPDF()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Exportar PDF
+                        </button>
                     </div>
                 </div>
                 <div id="costs-table-wrapper">${renderCostsTabSkeleton(cot)}</div>
