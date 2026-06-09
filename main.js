@@ -1516,6 +1516,331 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    window.selectQuoteOption = function(itemIndex, price, title, link, image, source, freeShipping) {
+        if (!window.lastMatchData || !window.lastMatchData.items[itemIndex]) return;
+        
+        document.getElementById('quote-search-modal').style.display = 'none';
+        
+        const item = window.lastMatchData.items[itemIndex];
+        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
+        const rubros = window.DATA_FIXTURES.RUBROS;
+        const rubro = rubros.find(r => r.id === cot.rubro) || rubros[0];
+        const markup = 1.0 + rubro.margen_promedio;
+
+        // Update item properties
+        item.producto = title;
+        item.costoUnitario = price;
+        item.costoTotal = price * item.cantidad;
+        item.permalink = link;
+        item.image = image;
+        item.source = source;
+        item.free_shipping = freeShipping;
+        item.error = false;
+        
+        let bidUnit = price * markup;
+        const budget_per_unit = cot.presupuesto / ((cot.items || []).reduce((s, i) => s + (i.cantidad || 1), 0) || 1);
+        if (bidUnit > budget_per_unit) bidUnit = budget_per_unit * 0.94;
+        
+        item.precioSugeridoUnitario = bidUnit;
+        item.precioSugeridoTotal = bidUnit * item.cantidad;
+        item.margen = item.precioSugeridoTotal - item.costoTotal;
+        item.marginPct = item.precioSugeridoTotal > 0 ? (item.margen / item.precioSugeridoTotal) * 100 : 0;
+
+        // Recalculate totals
+        window.lastMatchData.totalCost = window.lastMatchData.items.reduce((s, it) => s + it.costoTotal, 0);
+        window.lastMatchData.totalBid = window.lastMatchData.items.reduce((s, it) => s + it.precioSugeridoTotal, 0);
+        window.lastMatchData.totalMargin = window.lastMatchData.totalBid - window.lastMatchData.totalCost;
+        window.lastMatchData.totalMarginPct = window.lastMatchData.totalBid > 0 ? (window.lastMatchData.totalMargin / window.lastMatchData.totalBid) * 100 : 0;
+        window.lastMatchData.source = 'custom_manual_selection';
+
+        // Re-render table
+        const wrapper = document.getElementById('costs-table-wrapper');
+        if (wrapper) wrapper.innerHTML = renderCostsTable(window.lastMatchData, cot);
+    };
+
+    // Main entry point: fetches MeliPulse prices and renders the costs tab
+    async function loadAndRenderCostsTab(cot, containerEl) {
+        // Show skeleton immediately
+        containerEl.innerHTML = `
+            <div class="card" style="padding:0.75rem; margin-bottom:0;">
+                <div class="card-header" style="padding:0.5rem 0 0.75rem 0; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                    <h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Cotizador Inteligente</h4>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <span style="font-size:0.7rem;color:var(--text-muted);">Cotización rápida en el mercado nacional</span>
+                        <button class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem; display:flex; align-items:center; gap:4px; background:var(--success); border-color:var(--success);" onclick="window.saveBid()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            Guardar Licitación
+                        </button>
+                        <button class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem; display:flex; align-items:center; gap:4px;" onclick="window.exportToPDF()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Exportar PDF
+                        </button>
+                    </div>
+                </div>
+                <div id="costs-table-wrapper">${renderCostsTabSkeleton(cot)}</div>
+            </div>`;
+
+        // Attempt real-time MeliPulse fetch
+        const meliResult = await quoteItemsWithMeliPulse(cot);
+        const matchData = meliResult || matchItemsWithSuppliersStatic(cot);
+
+        // Store for strategy tab recalculation
+        window.lastMatchData = matchData;
+
+        // Update wrapper with real data
+        const wrapper = containerEl.querySelector('#costs-table-wrapper');
+        if (wrapper) wrapper.innerHTML = renderCostsTable(matchData, cot);
+
+        return matchData;
+    }
+
+    async function renderCotAnalytics(cot) {
+        const panel = document.getElementById('cot-analytics-panel');
+        if (!panel) return;
+
+        const rubroId = cot.rubro;
+        const budget = cot.presupuesto;
+
+        // Filtrar histórico de compras similares basándose en:
+        // 1. Rubro coincidente
+        // 2. Años seleccionados por el usuario
+        // 3. Rango de presupuesto (+/- 40%)
+        const years = window.selectedYears || ['2023', '2024', '2025', '2026'];
+        
+        let similarHistory = window.DATA_FIXTURES.HISTORIAL_LICITACIONES.filter(h => {
+            const hYear = h.fecha_publicacion.split('-')[0];
+            if (!years.includes(hYear)) return false;
+            
+            const matchRubro = (h.rubro === rubroId);
+            const matchBudget = (h.presupuesto_estimado >= budget * 0.4 && h.presupuesto_estimado <= budget * 2.2);
+            return matchRubro && matchBudget;
+        });
+
+        // Dar peso y ordenar según palabras clave similares en el título
+        const activeWords = cot.nombre.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(' ').filter(w => w.length > 3 && !['compra', 'agil', 'insumos', 'servicio', 'para', 'adquisicion'].includes(w));
+        
+        similarHistory = similarHistory.map(h => {
+            let score = 0;
+            const hTitleLower = h.nombre.toLowerCase();
+            activeWords.forEach(word => {
+                if (hTitleLower.includes(word)) score += 10;
+            });
+            return { ...h, keywordScore: score };
+        });
+
+        similarHistory.sort((a, b) => b.keywordScore - a.keywordScore);
+
+        if (similarHistory.length === 0) {
+            similarHistory = window.DATA_FIXTURES.HISTORIAL_LICITACIONES.slice(0, 4);
+        }
+
+        window.lastSimilarHistory = similarHistory.slice(0, 6);
+
+        // Quick static estimate for the strategy panel while MeliPulse loads
+        const staticMatch = matchItemsWithSuppliersStatic(cot);
+        const costVal = staticMatch.totalCost;
+        const suggestedBidPrice = staticMatch.totalBid;
+        const totalMargin = staticMatch.totalMargin;
+        const totalMarginPct = staticMatch.totalMarginPct;
+
+        // Ejecutar simulación detallada para las curvas de sensibilidad
+        const optimalSimData = calculate_optimal_bid(costVal, rubroId, cot.region, cot.comprador);
+        window.lastAnalysisData = optimalSimData;
+
+        // Renderizar el layout de sub-pestañas
+        panel.innerHTML = `
+            <!-- Encabezado Inteligente -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; border-bottom:1px solid rgba(148,163,184,0.1); padding-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Inteligencia Diaria COT</span>
+                        <span class="badge" style="background:var(--success)15; color:var(--success); border:1px solid var(--success)30; font-weight:700; font-size:0.65rem; margin-left:4px;">Probabilidad de Éxito: ${cot.scoreIA.toFixed(0)}%</span>
+                    </div>
+                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--text-light); margin-top:0.25rem;">${cot.nombre}</h3>
+                    <div style="display:flex; gap:12px; font-size:0.8rem; color:var(--text-muted); margin-top:0.4rem; align-items:center;">
+                        <span>Cód: <code>${cot.codigo}</code></span>
+                        <span>â€¢</span>
+                        <span>Comprador: <strong>${cot.comprador}</strong></span>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Presupuesto de Compra</span>
+                    <div style="font-size:1.35rem; font-weight:800; color:var(--secondary); font-family:monospace; margin-top:0.2rem;">${formatCLP(budget)}</div>
+                    <span style="font-size:0.72rem; color:var(--text-dark); display:block; margin-top:0.25rem;">Región: ${cot.region.replace('Region de', 'R.').replace('Metropolitana', 'M.')}</span>
+                </div>
+            </div>
+
+            <!-- Navegación de Sub-Pestañas -->
+            <div class="analytics-sub-tabs">
+                <button class="sub-tab-btn active" onclick="window.switchSubTab('sub-tab-costs')">ðŸ›ï¸ Cotizar en Mercado Libre</button>
+                <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-strategy')">Estrategia y Simulación IA</button>
+                <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-competitors')">Competencia Histórica</button>
+            </div>
+
+            <!-- CONTENIDO SUB-PESTAÑA 1: ESTRATEGIA Y SIMULACION -->
+            <div id="sub-tab-strategy" class="sub-tab-content">
+                <div class="stats-mini-grid" style="margin-bottom:1.25rem;">
+                    <div class="stat-mini-card">
+                        <span>Costo de Compra Est.</span>
+                        <div style="color:var(--text-muted);">${formatCLP(costVal)}</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <span>Margen Proyectado</span>
+                        <div style="color:var(--success);">${totalMarginPct.toFixed(1)}%</div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <span>Prob. de Ganar</span>
+                        <div style="color:${getProbColor(cot.scoreIA)}; font-weight:800;">${cot.scoreIA.toFixed(0)}%</div>
+                    </div>
+                    <div class="stat-mini-card" style="border-color:var(--secondary); background:rgba(99,102,241,0.06);">
+                        <span>Precio Oferta IA</span>
+                        <div style="color:var(--secondary); font-size:1rem; font-weight:800;">${formatCLP(suggestedBidPrice)}</div>
+                    </div>
+                </div>
+
+                <div class="card" style="padding:0.75rem; margin-bottom:0; background:rgba(30,41,59,0.25);">
+                    <div class="card-header" style="padding:0.5rem 0.5rem 0.75rem 0.5rem;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Elasticidad de Precio: Probabilidad vs Utilidad Proyectada</h4></div>
+                    <div id="chart-sensitivity" style="height: 220px;"></div>
+                </div>
+            </div>
+
+
+            <!-- CONTENIDO SUB-PESTAÑA 2: COSTOS Y PROVEEDORES â€” MeliPulse Tiempo Real -->
+            <div id="sub-tab-costs" class="sub-tab-content active">
+                <div id="melipulse-costs-container">
+                    <!-- Cargando... -->
+                </div>
+            </div>
+
+            <!-- CONTENIDO SUB-PESTAÑA 3: COMPETENCIA HISTORICA -->
+            <div id="sub-tab-competitors" class="sub-tab-content">
+                <!-- Gráfico de Historia -->
+                <div class="card" style="padding:0.75rem; margin-bottom:1.25rem; background:rgba(30,41,59,0.25);">
+                    <div class="card-header" style="padding:0.5rem 0.5rem 0.75rem 0.5rem;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Historial de Precios Adjudicados en ${years.join(', ')}</h4></div>
+                    <div id="chart-cot-history" style="height: 180px;"></div>
+                </div>
+
+                <!-- Tabla de Adjudicados -->
+                <div class="card" style="padding:0.75rem; margin-bottom:1.25rem;">
+                    <div class="card-header" style="padding:0.5rem 0 0.75rem 0;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Últimos Adjudicados Similares</h4></div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Proceso Histórico</th>
+                                    <th>Organismo</th>
+                                    <th>Proveedor Ganador</th>
+                                    <th>Monto Adjudicado</th>
+                                    <th>Año</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${similarHistory.slice(0, 4).map(h => `
+                                    <tr>
+                                        <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;" title="${h.nombre}">
+                                            <code style="font-family:monospace; font-size:0.7rem; background:rgba(99,102,241,0.08); padding:2px 4px; border-radius:3px; color:var(--text-muted); margin-right:4px;">${h.codigo}</code>
+                                            ${h.nombre}
+                                        </td>
+                                        <td style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem; color:var(--text-muted);">${h.comprador}</td>
+                                        <td style="max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem;">${h.adjudicado_a}</td>
+                                        <td style="font-family:monospace; font-weight:700; color:var(--success);">${formatCLP(h.precio_adjudicado)}</td>
+                                        <td style="font-size:0.8rem; color:var(--text-dark);">${h.fecha_publicacion.split('-')[0]}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tabla de Ofertas de Competidores -->
+                <div class="card" style="padding:0.75rem; margin-bottom:0;">
+                    <div class="card-header" style="padding:0.5rem 0 0.75rem 0;"><h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Historial de Precios Ofertados de Competidores</h4></div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Competidor</th>
+                                    <th>Monto Ofertado</th>
+                                    <th>Proceso</th>
+                                    <th>Año</th>
+                                    <th>Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${similarHistory.flatMap(h => (h.competidores_participantes || []).map(comp => ({ ...comp, code: h.codigo, year: h.fecha_publicacion.split('-')[0] }))).slice(0, 6).map(c => `
+                                    <tr>
+                                        <td style="font-weight:500;">${c.nombre}</td>
+                                        <td style="font-family:monospace; font-weight:600;">${formatCLP(c.precio)}</td>
+                                        <td><code style="font-family:monospace; font-size:0.7rem; color:var(--text-dark);">${c.code}</code></td>
+                                        <td style="font-size:0.8rem; color:var(--text-muted);">${c.year}</td>
+                                        <td>
+                                            <span class="badge ${c.adjudicado ? 'badge-success' : 'badge-warning'}" style="font-size:0.65rem; padding: 2px 6px;">
+                                                ${c.adjudicado ? 'Adjudicado' : 'Ofertado'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Render charts
+        setTimeout(() => {
+            renderSensitivityChart(optimalSimData);
+            renderCotHistoryChart(similarHistory.slice(0, 6));
+
+            // Launch MeliPulse async: load real prices in the costs tab
+            const costsContainer = document.getElementById('melipulse-costs-container');
+            if (costsContainer) {
+                loadAndRenderCostsTab(cot, costsContainer);
+            }
+        }, 150);
+    }
+
+    function renderCotHistoryChart(historyData) {
+        const el = document.getElementById('chart-cot-history');
+        if (!el) return;
+        if (chartCotHistory) chartCotHistory.destroy();
+
+        chartCotHistory = new ApexCharts(el, {
+            ...CHART_BASE,
+            chart: { ...CHART_BASE.chart, type: 'area', height: 180 },
+            series: [{
+                name: 'Precio Adjudicado (CLP)',
+                data: historyData.map(h => h.precio_adjudicado)
+            }, {
+                name: 'Presupuesto Estimado (CLP)',
+                data: historyData.map(h => h.presupuesto_estimado)
+            }],
+            xaxis: {
+                categories: historyData.map(h => h.codigo),
+                labels: { style: { fontSize: '9px' } }
+            },
+            yaxis: {
+                labels: {
+                    formatter: v => formatCLP(v).replace('CLP', '').trim(),
+                    style: { fontSize: '9px' }
+                }
+            },
+            stroke: { curve: 'smooth', width: 2 },
+            markers: { size: 3 },
+            dataLabels: { enabled: false }
+        });
+        chartCotHistory.render();
+    }
+
+    // Helper sleep
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+}); // End DOMContentLoaded
+
+    // --- BIDS REPOSITORY SYSTEM ---
+
     window.saveBid = function() {
         if (!window.lastMatchData || !window.activeCotCode) return;
         const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
