@@ -1286,70 +1286,66 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) throw new Error('Network error');
             const data = await res.json();
             
-            let allResults = [];
-            if (data.meli_results && data.meli_results.length > 0) {
-                allResults = data.meli_results.map(r => ({...r, source: 'MercadoLibre Chile'}));
-            }
-            if (data.other_results && data.other_results.length > 0) {
-                allResults = allResults.concat(data.other_results.map(r => ({...r, source: 'Resultados Web'})));
-            }
-            
-            if (allResults.length === 0) {
-                resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-muted);">No se encontraron opciones para "${query}". Intente buscar con otros términos.</div>`;
-                return;
-            }
-
-            resultsContainer.innerHTML = allResults.map((r, i) => {
-                const imgHtml = r.image ? `<img src="${r.image}" style="width:50px; height:50px; object-fit:contain; background:#fff; border-radius:4px;">` : `<div style="width:50px; height:50px; background:rgba(255,255,255,0.1); border-radius:4px; display:flex; align-items:center; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" opacity="0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`;
-                const priceNum = r.price || 0;
-                
-                return `<div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; border:1px solid rgba(148,163,184,0.2); border-radius:8px; background:rgba(30,41,59,0.5);">
-                    ${imgHtml}
-                    <div style="flex:1;">
-                        <h5 style="margin:0 0 0.25rem 0; font-size:0.85rem; color:var(--text-light); line-height:1.2;">${r.title}</h5>
-                        <div style="font-size:0.7rem; color:var(--text-muted);">
-                            <span style="background:rgba(52, 131, 250, 0.15); color:#3483FA; padding:1px 4px; border-radius:2px; font-weight:600;">${r.source}</span>
-                            ${r.free_shipping ? '<span style="color:var(--success); margin-left:8px; font-weight:600;">Envío Gratis</span>' : ''}
-                        </div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${formatCLP(priceNum)}</div>
-                        <button class="btn btn-primary" style="padding:4px 12px; font-size:0.75rem; margin-top:0.25rem;" onclick="window.selectQuoteOption(${itemIndex}, ${priceNum}, '${r.title.replace(/'/g, "\\'")}', '${r.link}', '${r.image || ''}', '${r.source}', ${r.free_shipping ? 'true' : 'false'})">Seleccionar</button>
-                    </div>
-                </div>`;
-            }).join('');
+            window.quoteSearchResultsCache = { 
+                meli: (data.meli_results || []).map(r => ({...r, source: 'MercadoLibre Chile'})), 
+                other: (data.other_results || []).map(r => ({...r, source: 'Resultados Web'})) 
+            };
+            window.currentQuoteTab = 'meli';
+            window.renderQuoteResults(itemIndex);
 
         } catch(err) {
-            // Static fallback for GitHub Pages demo mode (when Django is unavailable)
+            // Static fallback for GitHub Pages demo mode
             const mockPrice = Math.floor(Math.random() * 50000) + 10000;
-            const mockResults = [
-                { title: query + ' (Opción Recomendada)', price: mockPrice, source: 'MercadoLibre Chile', free_shipping: true, link: '#', image: '' },
-                { title: query + ' - Alternativa Económica', price: Math.floor(mockPrice * 0.8), source: 'MercadoLibre Chile', free_shipping: false, link: '#', image: '' },
-                { title: query + ' - Mayor Calidad', price: Math.floor(mockPrice * 1.5), source: 'Otras Tiendas', free_shipping: true, link: '#', image: '' }
-            ];
-
-            let html = `<div style="background:rgba(234,179,8,0.1); color:var(--warning); padding:8px; border-radius:4px; font-size:0.75rem; text-align:center; margin-bottom:1rem;">Modo demostración offline (Servidor backend no detectado). Mostrando alternativas simuladas.</div>`;
-            
-            html += mockResults.map((r, i) => {
-                const imgHtml = `<div style="width:50px; height:50px; background:rgba(255,255,255,0.1); border-radius:4px; display:flex; align-items:center; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" opacity="0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`;
-                return `<div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; border:1px solid rgba(148,163,184,0.2); border-radius:8px; background:rgba(30,41,59,0.5); margin-bottom:8px;">
-                    ${imgHtml}
-                    <div style="flex:1;">
-                        <h5 style="margin:0 0 0.25rem 0; font-size:0.85rem; color:var(--text-light); line-height:1.2;">${r.title}</h5>
-                        <div style="font-size:0.7rem; color:var(--text-muted);">
-                            <span style="background:rgba(52, 131, 250, 0.15); color:#3483FA; padding:1px 4px; border-radius:2px; font-weight:600;">${r.source}</span>
-                            ${r.free_shipping ? '<span style="color:var(--success); margin-left:8px; font-weight:600;">Envío Gratis</span>' : ''}
-                        </div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${formatCLP(r.price)}</div>
-                        <button class="btn btn-primary" style="padding:4px 12px; font-size:0.75rem; margin-top:0.25rem;" onclick="window.selectQuoteOption(${itemIndex}, ${r.price}, '${r.title.replace(/'/g, "\\'")}', '${r.link}', '${r.image || ''}', '${r.source}', ${r.free_shipping ? 'true' : 'false'})">Seleccionar</button>
-                    </div>
-                </div>`;
-            }).join('');
-            
-            resultsContainer.innerHTML = html;
+            window.quoteSearchResultsCache = {
+                meli: [
+                    { title: query + ' (Opción Recomendada)', price: mockPrice, source: 'MercadoLibre Chile', free_shipping: true, link: '#', image: '' },
+                    { title: query + ' - Alternativa Económica', price: Math.floor(mockPrice * 0.8), source: 'MercadoLibre Chile', free_shipping: false, link: '#', image: '' }
+                ],
+                other: [
+                    { title: query + ' - Mayor Calidad (Sodimac)', price: Math.floor(mockPrice * 1.5), source: 'Otras Tiendas', free_shipping: true, link: '#', image: '' },
+                    { title: query + ' - Proveedor Local', price: mockPrice, source: 'Otras Tiendas', free_shipping: false, link: '#', image: '' }
+                ]
+            };
+            window.currentQuoteTab = 'meli';
+            window.renderQuoteResults(itemIndex, true);
         }
+    };
+
+    window.renderQuoteResults = function(itemIndex, isDemo = false) {
+        const resultsContainer = document.getElementById('quote-search-results');
+        const activeData = window.quoteSearchResultsCache[window.currentQuoteTab] || [];
+        
+        const tabsHtml = `<div style="display:flex; gap:1rem; border-bottom:1px solid rgba(148,163,184,0.2); margin-bottom:1rem; padding-bottom:0.5rem;">
+            <button onclick="window.currentQuoteTab='meli'; window.renderQuoteResults(${itemIndex}, ${isDemo})" style="background:transparent; border:none; font-weight:600; cursor:pointer; padding:0 0.5rem; color:${window.currentQuoteTab === 'meli' ? '#3483FA' : 'var(--text-muted)'}; border-bottom:${window.currentQuoteTab === 'meli' ? '2px solid #3483FA' : 'none'};">Mercado Libre (${window.quoteSearchResultsCache.meli.length})</button>
+            <button onclick="window.currentQuoteTab='other'; window.renderQuoteResults(${itemIndex}, ${isDemo})" style="background:transparent; border:none; font-weight:600; cursor:pointer; padding:0 0.5rem; color:${window.currentQuoteTab === 'other' ? '#10B981' : 'var(--text-muted)'}; border-bottom:${window.currentQuoteTab === 'other' ? '2px solid #10B981' : 'none'};">Otras Páginas (${window.quoteSearchResultsCache.other.length})</button>
+        </div>`;
+
+        let demoHtml = isDemo ? `<div style="background:rgba(234,179,8,0.1); color:var(--warning); padding:8px; border-radius:4px; font-size:0.75rem; text-align:center; margin-bottom:1rem;">Modo demostración offline. Mostrando alternativas simuladas.</div>` : '';
+
+        if (activeData.length === 0) {
+            resultsContainer.innerHTML = tabsHtml + demoHtml + `<div style="padding:2rem; text-align:center; color:var(--text-muted);">No se encontraron opciones en esta pestaña.</div>`;
+            return;
+        }
+
+        const listHtml = activeData.map((r, i) => {
+            const imgHtml = `<div style="width:50px; height:50px; background:rgba(255,255,255,0.1); border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">${r.image ? `<img src="${r.image}" style="width:100%; height:100%; object-fit:contain; background:#fff;">` : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" opacity="0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`}</div>`;
+            return `<div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; border:1px solid rgba(148,163,184,0.2); border-radius:8px; background:rgba(30,41,59,0.5); margin-bottom:8px;">
+                ${imgHtml}
+                <div style="flex:1;">
+                    <h5 style="margin:0 0 0.25rem 0; font-size:0.85rem; color:var(--text-light); line-height:1.2;">${r.title}</h5>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">
+                        <span style="background:rgba(52, 131, 250, 0.15); color:#3483FA; padding:1px 4px; border-radius:2px; font-weight:600;">${r.source}</span>
+                        ${r.free_shipping ? '<span style="color:var(--success); margin-left:8px; font-weight:600;">Envío Gratis</span>' : ''}
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${formatCLP(r.price || 0)}</div>
+                    <button class="btn btn-primary" style="padding:4px 12px; font-size:0.75rem; margin-top:0.25rem;" onclick="window.selectQuoteOption(${itemIndex}, ${r.price || 0}, '${r.title.replace(/'/g, "\\'")}', '${r.link}', '${r.image || ''}', '${r.source}', ${r.free_shipping ? 'true' : 'false'})">Seleccionar</button>
+                </div>
+            </div>`;
+        }).join('');
+        
+        resultsContainer.innerHTML = tabsHtml + demoHtml + listHtml;
     };
 
     window.selectQuoteOption = function(itemIndex, price, title, link, image, source, freeShipping) {
