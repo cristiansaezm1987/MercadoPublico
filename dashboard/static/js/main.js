@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.apiSynced = false;
     window.selectedYears = ['2023', '2024', '2025', '2026'];
     window.activeCotCode = null;
-    window.activeSubTabId = 'sub-tab-strategy';
+    window.activeSubTabId = 'sub-tab-costs';
 
     init();
 
@@ -1351,13 +1351,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- Navegación de Sub-Pestañas -->
             <div class="analytics-sub-tabs">
-                <button class="sub-tab-btn active" onclick="window.switchSubTab('sub-tab-strategy')">Estrategia y Simulación IA</button>
-                <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-costs')">Costos y Proveedores Actuales</button>
+                <button class="sub-tab-btn active" onclick="window.switchSubTab('sub-tab-costs')">🛍️ Cotizar en Mercado Libre</button>
+                <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-strategy')">Estrategia y Simulación IA</button>
                 <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-competitors')">Competencia Histórica</button>
             </div>
 
             <!-- CONTENIDO SUB-PESTAÑA 1: ESTRATEGIA Y SIMULACION -->
-            <div id="sub-tab-strategy" class="sub-tab-content active">
+            <div id="sub-tab-strategy" class="sub-tab-content">
                 <div class="stats-mini-grid" style="margin-bottom:1.25rem;">
                     <div class="stat-mini-card">
                         <span>Costo de Compra Est.</span>
@@ -1385,12 +1385,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             <!-- CONTENIDO SUB-PESTAÑA 2: COSTOS Y PROVEEDORES — MeliPulse Tiempo Real -->
-            <div id="sub-tab-costs" class="sub-tab-content">
+            <div id="sub-tab-costs" class="sub-tab-content active">
                 <div id="melipulse-costs-container">
                     <!-- Cargando... -->
                 </div>
-
-
+            </div>
 
             <!-- CONTENIDO SUB-PESTAÑA 3: COMPETENCIA HISTORICA -->
             <div id="sub-tab-competitors" class="sub-tab-content">
