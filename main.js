@@ -1320,7 +1320,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }).join('');
 
         } catch(err) {
-            resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--danger);">Error al conectar con MeliPulse API. (${err.message})</div>`;
+            // Static fallback for GitHub Pages demo mode (when Django is unavailable)
+            const mockPrice = Math.floor(Math.random() * 50000) + 10000;
+            const mockResults = [
+                { title: query + ' (Opción Recomendada)', price: mockPrice, source: 'MercadoLibre Chile', free_shipping: true, link: '#', image: '' },
+                { title: query + ' - Alternativa Económica', price: Math.floor(mockPrice * 0.8), source: 'MercadoLibre Chile', free_shipping: false, link: '#', image: '' },
+                { title: query + ' - Mayor Calidad', price: Math.floor(mockPrice * 1.5), source: 'Otras Tiendas', free_shipping: true, link: '#', image: '' }
+            ];
+
+            let html = `<div style="background:rgba(234,179,8,0.1); color:var(--warning); padding:8px; border-radius:4px; font-size:0.75rem; text-align:center; margin-bottom:1rem;">Modo demostración offline (Servidor backend no detectado). Mostrando alternativas simuladas.</div>`;
+            
+            html += mockResults.map((r, i) => {
+                const imgHtml = `<div style="width:50px; height:50px; background:rgba(255,255,255,0.1); border-radius:4px; display:flex; align-items:center; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" opacity="0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`;
+                return `<div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; border:1px solid rgba(148,163,184,0.2); border-radius:8px; background:rgba(30,41,59,0.5); margin-bottom:8px;">
+                    ${imgHtml}
+                    <div style="flex:1;">
+                        <h5 style="margin:0 0 0.25rem 0; font-size:0.85rem; color:var(--text-light); line-height:1.2;">${r.title}</h5>
+                        <div style="font-size:0.7rem; color:var(--text-muted);">
+                            <span style="background:rgba(52, 131, 250, 0.15); color:#3483FA; padding:1px 4px; border-radius:2px; font-weight:600;">${r.source}</span>
+                            ${r.free_shipping ? '<span style="color:var(--success); margin-left:8px; font-weight:600;">Envío Gratis</span>' : ''}
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${formatCLP(r.price)}</div>
+                        <button class="btn btn-primary" style="padding:4px 12px; font-size:0.75rem; margin-top:0.25rem;" onclick="window.selectQuoteOption(${itemIndex}, ${r.price}, '${r.title.replace(/'/g, "\\'")}', '${r.link}', '${r.image || ''}', '${r.source}', ${r.free_shipping ? 'true' : 'false'})">Seleccionar</button>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            resultsContainer.innerHTML = html;
         }
     };
 
