@@ -1130,6 +1130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><div class="skeleton-line short"></div></td>
                 <td><div class="skeleton-line short"></div></td>
                 <td><div class="skeleton-line short"></div></td>
+                <td><div class="skeleton-line short" style="width:30px;"></div></td>
             </tr>
         `).join('');
         return `
@@ -1142,7 +1143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <thead><tr>
                         <th>Ítem Solicitado</th><th>Cant.</th><th>Fuente / Proveedor</th>
                         <th>Precio Unit. Real</th><th>Costo Total</th>
-                        <th>Precio Sugerido</th><th>Total Oferta</th><th>Margen Est.</th>
+                        <th>Precio Sugerido</th><th>Total Oferta</th><th>Margen Est.</th><th>Acciones</th>
                     </tr></thead>
                     <tbody>${rows}</tbody>
                 </table>
@@ -1205,6 +1206,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="font-family:monospace;color:var(--text-muted);font-size:0.8rem;">${formatCLP(it.precioSugeridoUnitario)}</td>
                 <td style="font-family:monospace;font-weight:700;color:var(--secondary);">${formatCLP(it.precioSugeridoTotal)}</td>
                 <td><span style="color:${marginColor};font-weight:700;font-size:0.8rem;">${it.marginPct.toFixed(0)}%</span></td>
+                <td>
+                    <button class="btn" style="padding:4px 8px; font-size:0.7rem; background:rgba(99,102,241,0.15); color:var(--primary-light); border:1px solid rgba(99,102,241,0.3); border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:4px;" onclick="window.openQuoteModal(${index}, '${it.producto.replace(/'/g, "\\'")}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Opciones
+                    </button>
+                </td>
             </tr>`;
         }).join('');
 
@@ -1215,6 +1221,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td></td>
             <td style="font-family:monospace;color:var(--secondary);font-size:0.9rem;font-weight:800;">${formatCLP(matchData.totalBid)}</td>
             <td style="color:var(--success);font-size:0.9rem;font-weight:800;">${matchData.totalMarginPct.toFixed(1)}%</td>
+            <td></td>
         </tr>`;
 
         return `${bannerHtml}
@@ -1223,7 +1230,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <thead><tr>
                         <th>Ítem / Producto</th><th>Cant.</th><th>Fuente</th>
                         <th>Precio Unit. Real</th><th>Costo Total</th>
-                        <th>Precio Sugerido</th><th>Total Oferta</th><th>Margen Est.</th>
+                        <th>Precio Sugerido</th><th>Total Oferta</th><th>Margen Est.</th><th>Acciones</th>
                     </tr></thead>
                     <tbody>${rows}</tbody>
                     <tfoot>${footRow}</tfoot>
@@ -1250,6 +1257,108 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>`;
     }
+
+    // Modal Manual Quote Logic
+    window.openQuoteModal = function(itemIndex, query) {
+        document.getElementById('quote-search-input').value = query;
+        document.getElementById('quote-search-modal').style.display = 'flex';
+        
+        const btnSearch = document.getElementById('btn-quote-search');
+        btnSearch.onclick = () => window.performQuoteSearch(itemIndex, document.getElementById('quote-search-input').value);
+        
+        // Auto-search on open
+        window.performQuoteSearch(itemIndex, query);
+    };
+
+    window.performQuoteSearch = async function(itemIndex, query) {
+        const resultsContainer = document.getElementById('quote-search-results');
+        resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-muted);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg><p style="margin-top:1rem;">Buscando alternativas en línea...</p></div>`;
+        
+        try {
+            const API_BASE = (window.location.protocol === 'file:' || window.location.port === '5500') ? 'http://127.0.0.1:8000' : '';
+            const res = await fetch(`${API_BASE}/api/search/?q=${encodeURIComponent(query)}`);
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+            
+            let allResults = [];
+            if (data.meli_results && data.meli_results.length > 0) {
+                allResults = data.meli_results.map(r => ({...r, source: 'MercadoLibre Chile'}));
+            }
+            if (data.other_results && data.other_results.length > 0) {
+                allResults = allResults.concat(data.other_results.map(r => ({...r, source: 'Resultados Web'})));
+            }
+            
+            if (allResults.length === 0) {
+                resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-muted);">No se encontraron opciones para "${query}". Intente buscar con otros términos.</div>`;
+                return;
+            }
+
+            resultsContainer.innerHTML = allResults.map((r, i) => {
+                const imgHtml = r.image ? `<img src="${r.image}" style="width:50px; height:50px; object-fit:contain; background:#fff; border-radius:4px;">` : `<div style="width:50px; height:50px; background:rgba(255,255,255,0.1); border-radius:4px; display:flex; align-items:center; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" opacity="0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`;
+                const priceNum = r.price || 0;
+                
+                return `<div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; border:1px solid rgba(148,163,184,0.2); border-radius:8px; background:rgba(30,41,59,0.5);">
+                    ${imgHtml}
+                    <div style="flex:1;">
+                        <h5 style="margin:0 0 0.25rem 0; font-size:0.85rem; color:var(--text-light); line-height:1.2;">${r.title}</h5>
+                        <div style="font-size:0.7rem; color:var(--text-muted);">
+                            <span style="background:rgba(52, 131, 250, 0.15); color:#3483FA; padding:1px 4px; border-radius:2px; font-weight:600;">${r.source}</span>
+                            ${r.free_shipping ? '<span style="color:var(--success); margin-left:8px; font-weight:600;">Envío Gratis</span>' : ''}
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${formatCLP(priceNum)}</div>
+                        <button class="btn btn-primary" style="padding:4px 12px; font-size:0.75rem; margin-top:0.25rem;" onclick="window.selectQuoteOption(${itemIndex}, ${priceNum}, '${r.title.replace(/'/g, "\\'")}', '${r.link}', '${r.image || ''}', '${r.source}', ${r.free_shipping ? 'true' : 'false'})">Seleccionar</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+        } catch(err) {
+            resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--danger);">Error al conectar con MeliPulse API. (${err.message})</div>`;
+        }
+    };
+
+    window.selectQuoteOption = function(itemIndex, price, title, link, image, source, freeShipping) {
+        if (!window.lastMatchData || !window.lastMatchData.items[itemIndex]) return;
+        
+        document.getElementById('quote-search-modal').style.display = 'none';
+        
+        const item = window.lastMatchData.items[itemIndex];
+        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
+        const rubros = window.DATA_FIXTURES.RUBROS;
+        const rubro = rubros.find(r => r.id === cot.rubro) || rubros[0];
+        const markup = 1.0 + rubro.margen_promedio;
+
+        // Update item properties
+        item.producto = title;
+        item.costoUnitario = price;
+        item.costoTotal = price * item.cantidad;
+        item.permalink = link;
+        item.image = image;
+        item.source = source;
+        item.free_shipping = freeShipping;
+        item.error = false;
+        
+        let bidUnit = price * markup;
+        const budget_per_unit = cot.presupuesto / ((cot.items || []).reduce((s, i) => s + (i.cantidad || 1), 0) || 1);
+        if (bidUnit > budget_per_unit) bidUnit = budget_per_unit * 0.94;
+        
+        item.precioSugeridoUnitario = bidUnit;
+        item.precioSugeridoTotal = bidUnit * item.cantidad;
+        item.margen = item.precioSugeridoTotal - item.costoTotal;
+        item.marginPct = item.precioSugeridoTotal > 0 ? (item.margen / item.precioSugeridoTotal) * 100 : 0;
+
+        // Recalculate totals
+        window.lastMatchData.totalCost = window.lastMatchData.items.reduce((s, it) => s + it.costoTotal, 0);
+        window.lastMatchData.totalBid = window.lastMatchData.items.reduce((s, it) => s + it.precioSugeridoTotal, 0);
+        window.lastMatchData.totalMargin = window.lastMatchData.totalBid - window.lastMatchData.totalCost;
+        window.lastMatchData.totalMarginPct = window.lastMatchData.totalBid > 0 ? (window.lastMatchData.totalMargin / window.lastMatchData.totalBid) * 100 : 0;
+        window.lastMatchData.source = 'custom_manual_selection';
+
+        // Re-render table
+        const wrapper = document.getElementById('costs-table-wrapper');
+        if (wrapper) wrapper.innerHTML = renderCostsTable(window.lastMatchData, cot);
+    };
 
     // Main entry point: fetches MeliPulse prices and renders the costs tab
     async function loadAndRenderCostsTab(cot, containerEl) {
