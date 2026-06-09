@@ -1284,3 +1284,22 @@ table tbody tr:hover { background: rgba(99,102,241,0.07) !important; }
 .quote-summary-bar .summary-value.bid  { color: #3483FA; }
 .quote-summary-bar .summary-value.margin { color: var(--success); }
 
+
+/* Skeleton Loading Animation */
+.item-loading-row td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+.skeleton-line {
+    height: 16px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+}
+.skeleton-line.short { width: 50%; }
+.skeleton-line.medium { width: 80%; }
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

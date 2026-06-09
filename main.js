@@ -1048,8 +1048,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
 
         try {
-            // Determine API base: if running from LiveServer/file, point to local Django
-            const API_BASE = (window.location.protocol === 'file:' || window.location.port === '5500') ? 'http://127.0.0.1:8000' : '';
+            // Determine API base: point to local Django if on github.io or local file
+            let API_BASE = '';
+            if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || window.location.port === '5500') {
+                API_BASE = 'http://127.0.0.1:8000';
+            }
             
             const res = await fetch(`${API_BASE}/api/quote-items/`, {
                 method: 'POST',
@@ -1275,7 +1278,10 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-muted);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg><p style="margin-top:1rem;">Buscando alternativas en línea...</p></div>`;
         
         try {
-            const API_BASE = (window.location.protocol === 'file:' || window.location.port === '5500') ? 'http://127.0.0.1:8000' : '';
+            let API_BASE = '';
+            if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || window.location.port === '5500') {
+                API_BASE = 'http://127.0.0.1:8000';
+            }
             const res = await fetch(`${API_BASE}/api/search/?q=${encodeURIComponent(query)}`);
             if (!res.ok) throw new Error('Network error');
             const data = await res.json();
