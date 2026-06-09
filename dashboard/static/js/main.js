@@ -1424,7 +1424,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </table>
 
             <!-- Client Info -->
-            <div style="background:#999; color:#fff; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:2px;">CLIENTE</div>
+            <div style="background:#e0e0e0; color:#000; border:1px solid #333; color:#000; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:2px;">CLIENTE</div>
             <div style="font-size:12px; line-height:1.3; margin-bottom:20px;">
                 <div style="color:#0000ee; text-decoration:underline; font-weight:bold;">${cot.comprador || 'I.MUNICIPALIDAD'}</div>
                 <div>Región del ${cot.comprador_region || 'Maule'}</div>
@@ -1436,11 +1436,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Items Table -->
             <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:10px;">
                 <thead>
-                    <tr style="background:#999; color:#fff;">
-                        <th style="padding:4px; text-align:left; border-right:1px solid #fff;">DESCRIPCIÓN</th>
-                        <th style="padding:4px; text-align:center; border-right:1px solid #fff; width:90px;">PRECIO UNIT.</th>
-                        <th style="padding:4px; text-align:center; border-right:1px solid #fff; width:50px;">CANT.</th>
-                        <th style="padding:4px; text-align:center; border-right:1px solid #fff; width:60px;">OTROS</th>
+                    <tr style="background:#e0e0e0; color:#000; border:1px solid #333; color:#000;">
+                        <th style="padding:4px; text-align:left; border-right:1px solid #333; border-bottom:1px solid #333; border-top:1px solid #333;">DESCRIPCIÓN</th>
+                        <th style="padding:4px; text-align:center; border-right:1px solid #333; border-bottom:1px solid #333; border-top:1px solid #333; width:90px;">PRECIO UNIT.</th>
+                        <th style="padding:4px; text-align:center; border-right:1px solid #333; border-bottom:1px solid #333; border-top:1px solid #333; width:50px;">CANT.</th>
+                        <th style="padding:4px; text-align:center; border-right:1px solid #333; border-bottom:1px solid #333; border-top:1px solid #333; width:60px;">OTROS</th>
                         <th style="padding:4px; text-align:center; width:90px;">TOTAL</th>
                     </tr>
                 </thead>
@@ -1454,7 +1454,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tr>
                     <td style="width:60%; vertical-align:top; padding-right:20px;">
                         <!-- Bank Info -->
-                        <div style="background:#4b6e9b; color:#fff; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:5px;">DATOS BANCARIOS</div>
+                        <div style="background:#4b6e9b; color:#000; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:5px;">DATOS BANCARIOS</div>
                         <div style="font-size:11px; line-height:1.4; margin-bottom:15px; border-bottom:1px solid #000; padding-bottom:10px;">
                             Tecnoexpress SpA<br>
                             RUT:77.043.858-6<br>
@@ -1464,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         
                         <!-- Terms -->
-                        <div style="background:#999; border:1px solid #333; color:#fff; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:5px;">TÉRMINOS Y CONDICIONES</div>
+                        <div style="background:#e0e0e0; color:#000; border:1px solid #333; border:1px solid #333; color:#000; padding:2px 5px; font-weight:bold; font-size:12px; margin-bottom:5px;">TÉRMINOS Y CONDICIONES</div>
                         <div style="border:1px solid #333; padding:5px; font-size:11px; line-height:1.5;">
                             1. El pago será realizado a 30 días contra factura recibida conforme.<br>
                             2. Cotización válida por 30 días.<br>
