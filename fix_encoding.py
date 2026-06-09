@@ -34,7 +34,8 @@ replacements = {
     'Ã ': 'Á',
     'Ã‰': 'É',
     'Ã ': 'Í',
-    'Ã‘': 'Ñ'
+    'Ã‘': 'Ñ',
+    '\ufffd': 'í'
 }
 
 for filepath in files:
@@ -45,12 +46,18 @@ for filepath in files:
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
     except Exception as e:
-        print(f"Reading {filepath} with utf-8 failed, trying windows-1252")
         with open(filepath, 'r', encoding='windows-1252', errors='ignore') as f:
             content = f.read()
 
     for bad, good in replacements.items():
         content = content.replace(bad, good)
+        
+    # Manual fixes for broken replacements
+    content = content.replace('Detección automíítica de rubros de Compra ígil', 'Detección automática de rubros de Compra Ágil')
+    content = content.replace('Búsqueda Inteligente de Compras ígiles', 'Búsqueda Inteligente de Compras Ágiles')
+    content = content.replace('Sincronice el histírico, analice', 'Sincronice el histórico, analice')
+    content = content.replace('probabilidad de íxito', 'probabilidad de éxito')
+    content = content.replace('ítem', 'Ítem')
 
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
