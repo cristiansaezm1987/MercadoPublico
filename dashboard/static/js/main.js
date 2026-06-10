@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate filter-region-rubros
         const filterRegionRubros = document.getElementById('filter-region-rubros');
         if (filterRegionRubros) {
-            filterRegionRubros.innerHTML = regiones.map(reg => `<option value="${reg}" ${reg === "Region Metropolitaúna" ? "selected" : ""}>${reg}</option>`).join('');
+            filterRegionRubros.innerHTML = regiones.map(reg => `<option value="${reg}" ${reg === "Region Metropolitana" ? "selected" : ""}>${reg}</option>`).join('');
         }
 
         // Populate rec-rubro
@@ -59,11 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate sim-region
         const simRegion = document.getElementById('sim-region');
         if (simRegion) {
-            simRegion.innerHTML = regiones.map(reg => `<option value="${reg}" ${reg === "Region Metropolitaúna" ? "selected" : ""}>${reg}</option>`).join('');
+            simRegion.innerHTML = regiones.map(reg => `<option value="${reg}" ${reg === "Region Metropolitana" ? "selected" : ""}>${reg}</option>`).join('');
         }
 
         // Populate sim-comprador (Metro region selected by default)
-        populateCompradoresDropdown("Region Metropolitaúna");
+        populateCompradoresDropdown("Region Metropolitana");
 
         // Populate sup-rubro
         const supRubro = document.getElementById('sup-rubro');
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate sup-region
         const supRegion = document.getElementById('sup-region');
         if (supRegion) {
-            supRegion.innerHTML = regiones.map(reg => `<option value="${reg}" ${reg === "Region Metropolitaúna" ? "selected" : ""}>${reg}</option>`).join('');
+            supRegion.innerHTML = regiones.map(reg => `<option value="${reg}" ${reg === "Region Metropolitana" ? "selected" : ""}>${reg}</option>`).join('');
         }
 
         // Populate recent-tenders-body
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="font-size:0.8rem;color:var(--text-muted);">${formatDateShort(t.fecha_publicacion)}</td>
                     <td style="font-size:0.8rem;color:var(--warning);">${formatDateShort(t.fecha_cierre)}</td>
                     <td style="font-family:monospace;">${formatCLP(t.presupuesto_estimado)}</td>
-                    <td style="color:var(--text-muted);font-size:0.85rem;"><spaún class="${badgeClass}">${scoreIA.toFixed(0)}% Score IA</spaún></td>
+                    <td style="color:var(--text-muted);font-size:0.85rem;"><span class="${badgeClass}">${scoreIA.toFixed(0)}% Score IA</span></td>
                     <td style="font-family:monospace;font-weight:600;color:var(--success);">${formatCLP(t.precio_adjudicado)}</td>
                 </tr>
             `}).join('');
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let bidFactor = Math.max(0.4, 1.0 - (nBidders / 25.0));
         let score = (rubro.probabilidad_base * 0.4 + bidFactor * 0.4 + rubro.tasa_adjudicacion_promedio * 0.2) * 100;
         
-        if (t.region === "Region Metropolitaúna") score += 6;
+        if (t.region === "Region Metropolitana") score += 6;
         score = Math.max(20, Math.min(97, score));
         return score;
     }
@@ -146,9 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateHeaderTitles(tabId) {
         const map = {
-            'tab-dashboard': ['Paúnel de Control Inteligente COT', 'Monitoreo de competencia de compras ágiles, simulaciones y optimización de márgenes.'],
+            'tab-dashboard': ['Panel de Control Inteligente COT', 'Monitoreo de competencia de compras ágiles, simulaciones y optimización de márgenes.'],
             'tab-rubros': ['Matriz de Oportunidades por Rubro', 'Detección automática de rubros de Compra Ágil con mayor tasa de adjudicación.'],
-            'tab-recommend': ['Búsqueda Inteligente de Compras Ágiles (COT)', 'Sincronice el histórico, aúnalice la competencia aúnterior y visualice adjudicaciones similares.'],
+            'tab-recommend': ['Búsqueda Inteligente de Compras Ágiles (COT)', 'Sincronice el histórico, analice la competencia anterior y visualice adjudicaciones similares.'],
             'tab-simulator': ['Simulador de Precios COT', 'Calcula la probabilidad de éxito de tus ofertas para procesos Compra Ágil.'],
             'tab-suppliers': ['Buscador de Proveedores Estratégicos', 'Encuentra distribuidores con mejores precios para abastecer tus postulaciones COT.'],
         };
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // counts up percentage values
-    function aúnimateValue(el, start, end, duration) {
+    function animateValue(el, start, end, duration) {
         if (!el) return;
         let ts = null;
         const step = t => {
@@ -189,16 +189,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function getProbColor(prob) {
         if (prob >= 65) return 'var(--success)';
         if (prob >= 40) return 'var(--warning)';
-        return 'var(--daúnger)';
+        return 'var(--danger)';
     }
 
     const CHART_COLORS = ['#6366f1','#06b6d4','#d946ef','#10b981','#f59e0b','#ef4444'];
     const CHART_BASE = {
-        chart: { background: 'traúnsparent', foreColor: '#94a3b8', toolbar: { show: false }, aúnimations: { enabled: true, speed: 600 } },
+        chart: { background: 'transparent', foreColor: '#94a3b8', toolbar: { show: false }, animations: { enabled: true, speed: 600 } },
         tooltip: { theme: 'dark' },
         grid: { borderColor: 'rgba(148,163,184,0.1)', strokeDashArray: 4 },
         colors: CHART_COLORS,
-        fontFamily: 'Inter, saúns-serif'
+        fontFamily: 'Inter, sans-serif'
     };
 
     let chartRubrosOverview = null, chartMarketShare = null, chartRadar = null, chartSensitivity = null, chartCotHistory = null;
@@ -217,10 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- CLIENT-SIDE FALLBACK CALCULATIONS ----
-    function detect_highest_potential_rubros(user_region = "Region Metropolitaúna") {
+    function detect_highest_potential_rubros(user_region = "Region Metropolitana") {
         const rubros = window.DATA_FIXTURES.RUBROS;
         const locales = window.DATA_FIXTURES.PROVEEDORES_LOCALES;
-        let aúnalysis = [];
+        let analysis = [];
         for (let r of rubros) {
             let rubro_id = r.id;
             let comp_pressure = r.n_competidores_promedio / 25.0;
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (score_percentage >= 50) status = "Oportunidad Moderada";
             else status = "Alta Competencia / Margenes Bajos";
 
-            aúnalysis.push({
+            analysis.push({
                 id: r.id, nombre: r.nombre, codigo_onu: r.codigo_onu,
                 volumen_clp: r.volumen_mercado_clp, competidores: r.n_competidores_promedio,
                 tasa_adjudicacion: r.tasa_adjudicacion_promedio * 100,
@@ -244,8 +244,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 dificultad: r.dificultad, proveedores_disponibles: suppliers_count
             });
         }
-        aúnalysis.sort((a, b) => b.score - a.score);
-        return aúnalysis;
+        analysis.sort((a, b) => b.score - a.score);
+        return analysis;
     }
 
     function calculate_optimal_bid(cost, rubro_id, region, comprador_name) {
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        let relevaúnt_competitors = competitors.filter(c => c.rubros.includes(rubro_id));
+        let relevant_competitors = competitors.filter(c => c.rubros.includes(rubro_id));
         return {
             cost: cost,
             suggested_price: Math.round(suggested_price),
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
             suggested_margin: suggested_margin * 100,
             suggested_multiplier: suggested_price / cost,
             pricing_points: pricing_points,
-            competitors: relevaúnt_competitors,
+            competitors: relevant_competitors,
             regional_bonus_applied: regional_bonus > 0
         };
     }
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return results;
     }
 
-    function find_suppliers_aúnd_costs(rubro_id, region, target_cost) {
+    function find_suppliers_and_costs(rubro_id, region, target_cost) {
         const locales = window.DATA_FIXTURES.PROVEEDORES_LOCALES;
         let matches = [];
         for (let s of locales) {
@@ -424,12 +424,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 TipoLicitacion: 'Compra Agil',
                 Estado: 'Publicada',
                 ValorEstimado: t.presupuesto || t.presupuesto_estimado,
-                Comprador: { NombreOrgaúnismo: t.comprador, Region: t.region, MailContacto: 'contacto@orgaúnismo.cl' },
+                Comprador: { NombreOrganismo: t.comprador, Region: t.region, MailContacto: 'contacto@organismo.cl' },
                 FechaPublicacion: t.fecha_publicacion,
                 FechaCierre: t.fecha_cierre,
                 FechaEstimadaAdjudicacion: t.fecha_estimada_adjudicacion || '2026-06-20T12:00:00Z',
                 Descripcion: t.descripcion || 'Compra Agil de insumos y servicios de urgencia, menor a 30 UTM.',
-                Items: { Listado: (t.items || []).map(it => ({ Producto: it.producto || it.Producto, Caúntidad: it.caúntidad || it.Caúntidad, UnidadMedida: it.unidad || it.UnidadMedida || 'Unidad' })) }
+                Items: { Listado: (t.items || []).map(it => ({ Producto: it.producto || it.Producto, Cantidad: it.cantidad || it.Cantidad, UnidadMedida: it.unidad || it.UnidadMedida || 'Unidad' })) }
             }] };
         }
 
@@ -440,20 +440,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 TipoLicitacion: 'Compra Agil',
                 Estado: 'Publicada',
                 ValorEstimado: 2500000,
-                Comprador: { NombreOrgaúnismo: 'Direccion de Administracion de Salud Metropolitaúna', Region: 'Region Metropolitaúna', MailContacto: 'compras@saludmetro.cl' },
+                Comprador: { NombreOrganismo: 'Direccion de Administracion de Salud Metropolitana', Region: 'Region Metropolitana', MailContacto: 'compras@saludmetro.cl' },
                 FechaPublicacion: '2026-06-02T10:00:00Z',
                 FechaCierre: '2026-06-15T18:00:00Z',
                 FechaEstimadaAdjudicacion: '2026-06-25T15:00:00Z',
                 Descripcion: 'Adquisicion urgente de insumos criticos e implementacion medica para centros de atencion primaria.',
-                Items: { Listado: [{ Producto: 'Insumos Medicos Quirurgicos', Caúntidad: 1200, UnidadMedida: 'Unidad' }, { Producto: 'Kits de Proteccion Saúnitaria', Caúntidad: 300, UnidadMedida: 'Unidad' }] }
+                Items: { Listado: [{ Producto: 'Insumos Medicos Quirurgicos', Cantidad: 1200, UnidadMedida: 'Unidad' }, { Producto: 'Kits de Proteccion Sanitaria', Cantidad: 300, UnidadMedida: 'Unidad' }] }
             }]
         };
     }
 
     // ---- DASHBOARD LOAD DATA ----
     async function loadDashboardData() {
-        const data = await safeFetch('/api/rubros/?region=Region%20Metropolitaúna', () => {
-            return { rubros: detect_highest_potential_rubros('Region Metropolitaúna') };
+        const data = await safeFetch('/api/rubros/?region=Region%20Metropolitana', () => {
+            return { rubros: detect_highest_potential_rubros('Region Metropolitana') };
         });
         rubrosData = data.rubros || [];
         renderOverviewChart(rubrosData);
@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const regionEl = document.getElementById('filter-region-rubros');
         if (regionEl) {
-            regionEl.addEventListener('chaúnge', async () => {
+            regionEl.addEventListener('change', async () => {
                 const region = regionEl.value;
                 const dataRegion = await safeFetch(`/api/rubros/?region=${encodeURIComponent(region)}`, () => {
                     return { rubros: detect_highest_potential_rubros(region) };
@@ -514,14 +514,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.innerHTML = data.map(r => {
             let badgeClass = 'badge-warning';
             if (r.score >= 70) badgeClass = 'badge-success';
-            if (r.score < 45) badgeClass = 'badge-daúnger';
+            if (r.score < 45) badgeClass = 'badge-danger';
             return `<tr>
                 <td style="font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.nombre}</td>
-                <td><spaún class="badge ${badgeClass}">${r.score.toFixed(1)}%</spaún></td>
+                <td><span class="badge ${badgeClass}">${r.score.toFixed(1)}%</span></td>
                 <td>${r.competidores}</td>
                 <td>${r.tasa_adjudicacion.toFixed(1)}%</td>
                 <td>${r.margen.toFixed(1)}%</td>
-                <td><spaún style="font-size:0.75rem;color:var(--text-muted);">${r.dificultad}</spaún></td>
+                <td><span style="font-size:0.75rem;color:var(--text-muted);">${r.dificultad}</span></td>
             </tr>`;
         }).join('');
     }
@@ -563,9 +563,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Por favor completa Costo Base, Rubro y Region.'); return;
         }
         const btn = document.getElementById('btn-simulate');
-        if (btn) { btn.disabled = true; btn.innerHTML = 'Calculaúndo...'; }
+        if (btn) { btn.disabled = true; btn.innerHTML = 'Calculando...'; }
         
-        let url = `/api/aúnalyze/?cost=${cost}&rubro_id=${encodeURIComponent(rubro)}&region=${encodeURIComponent(region)}`;
+        let url = `/api/analyze/?cost=${cost}&rubro_id=${encodeURIComponent(rubro)}&region=${encodeURIComponent(region)}`;
         if (comprador) url += `&comprador=${encodeURIComponent(comprador)}`;
 
         try {
@@ -575,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) { alert('Error: ' + data.error); return; }
             updateSimulatorResults(data, cost);
         } catch (err) {
-            alert('Error al conectar con la API de aúnalisis.');
+            alert('Error al conectar con la API de analisis.');
         } finally {
             if (btn) { btn.disabled = false; btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg> Calcular Oferta COT Optima'; }
         }
@@ -590,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (priceEl) priceEl.textContent = formatCLP(data.suggested_price);
         if (probEl) {
-            aúnimateValue(probEl, 0, data.suggested_prob, 800);
+            animateValue(probEl, 0, data.suggested_prob, 800);
             probEl.style.color = getProbColor(data.suggested_prob);
         }
         if (marginEl) marginEl.textContent = data.suggested_margin.toFixed(1) + '%';
@@ -634,17 +634,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderCompetitorsTable(competitors, cost, myMult) {
         const tbody = document.getElementById('sim-competitors-body');
         if (!tbody) return;
-        if (!competitors.length) { tbody.innerHTML = '<tr><td colspaún="4" style="text-align:center;color:var(--text-dark);">Sin datos de competidores para este rubro.</td></tr>'; return; }
+        if (!competitors.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-dark);">Sin datos de competidores para este rubro.</td></tr>'; return; }
         tbody.innerHTML = competitors.map(c => {
             const estPrice = formatCLP(cost * c.multiplicador_precio);
             let repClass = 'badge-warning';
-            if (c.reputacion === 'Alta' || c.reputacion === 'Muy Alta') repClass = 'badge-daúnger';
+            if (c.reputacion === 'Alta' || c.reputacion === 'Muy Alta') repClass = 'badge-danger';
             if (c.reputacion === 'Baja') repClass = 'badge-success';
             return `<tr>
                 <td style="font-weight:500;">${c.nombre}</td>
                 <td style="font-family:monospace;">${estPrice}</td>
                 <td>${(c.tasa_exito * 100).toFixed(0)}%</td>
-                <td><spaún class="badge ${repClass}">${c.reputacion}</spaún></td>
+                <td><span class="badge ${repClass}">${c.reputacion}</span></td>
             </tr>`;
         }).join('');
     }
@@ -666,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const json = await safeFetch(`/api/suppliers/?rubro_id=${encodeURIComponent(rubro)}&region=${encodeURIComponent(region)}&cost=${cost}`, () => {
-                return { suppliers: find_suppliers_aúnd_costs(rubro, region, cost) };
+                return { suppliers: find_suppliers_and_costs(rubro, region, cost) };
             });
             renderSupplierCards(json.suppliers || []);
         } catch (err) { alert('Error al buscar proveedores.'); }
@@ -676,22 +676,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('suppliers-results');
         if (!container) return;
         if (!suppliers.length) {
-            container.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;"><p>No se encontróaron proveedores en esa region para ese rubro.</p><p style="font-size:0.85rem;margin-top:0.5rem;">Intenta con una region diferente o un rubro mas amplio.</p></div>`;
+            container.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;"><p>No se encontraron proveedores en esa region para ese rubro.</p><p style="font-size:0.85rem;margin-top:0.5rem;">Intenta con una region diferente o un rubro mas amplio.</p></div>`;
             return;
         }
         container.innerHTML = suppliers.map((s, i) => `
-            <div class="card supplier-card" style="aúnimation-delay:${i * 0.05}s">
+            <div class="card supplier-card" style="animation-delay:${i * 0.05}s">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-                    <spaún class="badge badge-success" style="font-size:0.8rem;">${s.descuento_pct.toFixed(1)}% descuento</spaún>
+                    <span class="badge badge-success" style="font-size:0.8rem;">${s.descuento_pct.toFixed(1)}% descuento</span>
                     <div class="prob-meter-value" style="font-size:1.4rem;">${s.score.toFixed(1)}</div>
                 </div>
                 <h4 style="font-weight:600;margin-bottom:0.5rem;font-size:0.9rem;">${s.nombre}</h4>
                 <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;">${s.region}</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.8rem;margin-bottom:1rem;">
-                    <div><spaún style="color:var(--text-dark);">Costo estimado</spaún><div style="font-family:monospace;font-weight:700;color:var(--primary-light);">${formatCLP(s.costo_estimado)}</div></div>
-                    <div><spaún style="color:var(--text-dark);">Ahorro total</spaún><div style="font-family:monospace;font-weight:700;color:var(--success);">${formatCLP(s.ahorro_estimado)}</div></div>
-                    <div><spaún style="color:var(--text-dark);">Confiabilidad</spaún><div style="color:var(--secondary);">${s.confiabilidad_pct.toFixed(1)}%</div></div>
-                    <div><spaún style="color:var(--text-dark);">Contacto</spaún><div style="font-size:0.72rem;">${s.telefono}</div></div>
+                    <div><span style="color:var(--text-dark);">Costo estimado</span><div style="font-family:monospace;font-weight:700;color:var(--primary-light);">${formatCLP(s.costo_estimado)}</div></div>
+                    <div><span style="color:var(--text-dark);">Ahorro total</span><div style="font-family:monospace;font-weight:700;color:var(--success);">${formatCLP(s.ahorro_estimado)}</div></div>
+                    <div><span style="color:var(--text-dark);">Confiabilidad</span><div style="color:var(--secondary);">${s.confiabilidad_pct.toFixed(1)}%</div></div>
+                    <div><span style="color:var(--text-dark);">Contacto</span><div style="font-size:0.72rem;">${s.telefono}</div></div>
                 </div>
                 <a href="mailto:${s.email}" class="btn btn-sm btn-secondary" style="width:100%;text-align:center;">Contactar: ${s.email}</a>
             </div>
@@ -712,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupRegionDependentDropdowns() {
         const simRegion = document.getElementById('sim-region');
         if (simRegion) {
-            simRegion.addEventListener('chaúnge', async () => {
+            simRegion.addEventListener('change', async () => {
                 const region = simRegion.value;
                 populateCompradoresDropdown(region);
             });
@@ -734,13 +734,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listeners para filtros
         const recRubroEl = document.getElementById('rec-rubro');
         const recRegionEl = document.getElementById('rec-region');
-        if (recRubroEl) recRubroEl.addEventListener('chaúnge', filterActiveCots);
-        if (recRegionEl) recRegionEl.addEventListener('chaúnge', filterActiveCots);
+        if (recRubroEl) recRubroEl.addEventListener('change', filterActiveCots);
+        if (recRegionEl) recRegionEl.addEventListener('change', filterActiveCots);
         
         const cotSortBy = document.getElementById('cot-sort-by');
         const cotDateFilter = document.getElementById('cot-date-filter');
-        if (cotSortBy) cotSortBy.addEventListener('chaúnge', filterActiveCots);
-        if (cotDateFilter) cotDateFilter.addEventListener('chaúnge', filterActiveCots);
+        if (cotSortBy) cotSortBy.addEventListener('change', filterActiveCots);
+        if (cotDateFilter) cotDateFilter.addEventListener('change', filterActiveCots);
         
         // Carga inicial (vacia o placeholder)
         filterActiveCots();
@@ -781,11 +781,11 @@ document.addEventListener('DOMContentLoaded', () => {
             consoleLog.scrollTop = consoleLog.scrollHeight;
         };
 
-        logMsg(`Iniciaúndo conexión con API pública de Mercado Público Chile (api.mercadopublico.cl)...`);
+        logMsg(`Iniciando conexión con API pública de Mercado Público Chile (api.mercadopublico.cl)...`);
         await sleep(400);
-        logMsg(`Validaúndo token de autenticación E7F30A19-3FAB-4011-8FBF-154E135C490A...`);
+        logMsg(`Validando token de autenticación E7F30A19-3FAB-4011-8FBF-154E135C490A...`);
         await sleep(300);
-        logMsg(`Credenciales validadas correctamente. Descargaúndo índices históricos...`);
+        logMsg(`Credenciales validadas correctamente. Descargando índices históricos...`);
         await sleep(300);
 
         // Simulamos descarga secuencial por año
@@ -793,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentStep = 0;
 
         for (let year of selectedYears) {
-            logMsg(`>>> Conectaúndo a histórico del año ${year} (Búsqueda inteligente COTs)...`);
+            logMsg(`>>> Conectando a histórico del año ${year} (Búsqueda inteligente COTs)...`);
             await sleep(400);
             
             // Simular meses del año
@@ -810,15 +810,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 progressBar.style.width = `${pct}%`;
                 
                 // Generar log realista
-                const raúndCots = Math.floor(Math.raúndom() * 80) + 30;
-                const dateParam = `01${String(Math.floor(Math.raúndom()*12)+1).padStart(2, '0')}${year}`;
-                logMsg(`  GET /licitaciones.json?fecha=${dateParam}&estado=adjudicada - 200 OK (${t}: Procesadas ${raúndCots} Compras Ágiles)`);
-                await sleep(Math.floor(Math.raúndom() * 200) + 150);
+                const randCots = Math.floor(Math.random() * 80) + 30;
+                const dateParam = `01${String(Math.floor(Math.random()*12)+1).padStart(2, '0')}${year}`;
+                logMsg(`  GET /licitaciones.json?fecha=${dateParam}&estado=adjudicada - 200 OK (${t}: Procesadas ${randCots} Compras Ágiles)`);
+                await sleep(Math.floor(Math.random() * 200) + 150);
             }
             logMsg(`âœ” Año ${year} cargado con éxito en memoria caché.`);
         }
 
-        logMsg(`Procesaúndo adjudicaciones y marcas de competidores...`);
+        logMsg(`Procesando adjudicaciones y marcas de competidores...`);
         progressBar.style.width = `95%`;
         await sleep(500);
 
@@ -843,7 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-dark); margin-bottom:1rem;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                 <p>Por favor presione "Refrescar Lectura" para sincronizar y cargar las compras ágiles disponibles para los años seleccionados.</p>
             </div>`;
-            if (countEl) countEl.textContent = '0 encontróadas';
+            if (countEl) countEl.textContent = '0 encontradas';
             return;
         }
 
@@ -874,7 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
-        // Map aúnd enrich COTs with calculated IA Win Score
+        // Map and enrich COTs with calculated IA Win Score
         activeCOTs = activeCOTs.map(t => {
             const scoreIA = calculate_cot_score(t);
             return { ...t, scoreIA: scoreIA };
@@ -898,11 +898,11 @@ document.addEventListener('DOMContentLoaded', () => {
             activeCOTs.sort((a, b) => b.scoreIA - a.scoreIA);
         }
 
-        if (countEl) countEl.textContent = `${activeCOTs.length} encontróadas`;
+        if (countEl) countEl.textContent = `${activeCOTs.length} encontradas`;
 
         if (activeCOTs.length === 0) {
             listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:2rem;">
-                No se encontróaron compras ágiles activas con los filtros aplicados.
+                No se encontraron compras ágiles activas con los filtros aplicados.
             </div>`;
             return;
         }
@@ -911,9 +911,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const scoreColor = getProbColor(c.scoreIA);
             let recommendationBadge = '';
             if (c.scoreIA >= 80) {
-                recommendationBadge = `<spaún style="font-size:0.65rem; background:rgba(16,185,129,0.15); color:var(--success); font-weight:700; padding:1px 6px; border-radius:3px; border:1px solid rgba(16,185,129,0.2);">RECOMENDADA</spaún>`;
+                recommendationBadge = `<span style="font-size:0.65rem; background:rgba(16,185,129,0.15); color:var(--success); font-weight:700; padding:1px 6px; border-radius:3px; border:1px solid rgba(16,185,129,0.2);">RECOMENDADA</span>`;
             } else if (c.scoreIA >= 65) {
-                recommendationBadge = `<spaún style="font-size:0.65rem; background:rgba(6,182,212,0.15); color:var(--secondary); font-weight:700; padding:1px 6px; border-radius:3px; border:1px solid rgba(6,182,212,0.2);">VIABLE</spaún>`;
+                recommendationBadge = `<span style="font-size:0.65rem; background:rgba(6,182,212,0.15); color:var(--secondary); font-weight:700; padding:1px 6px; border-radius:3px; border:1px solid rgba(6,182,212,0.2);">VIABLE</span>`;
             }
 
             return `
@@ -922,7 +922,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <code style="font-family:monospace;font-size:0.75rem;background:rgba(99,102,241,0.15);padding:2px 6px;border-radius:4px;color:var(--primary-light);font-weight:700;">${c.codigo}</code>
                     <div style="display:flex; gap:6px; align-items:center;">
                         ${recommendationBadge}
-                        <spaún class="badge" style="background:${scoreColor}15; color:${scoreColor}; border:1px solid ${scoreColor}30; font-weight:700; font-size:0.65rem;">${c.scoreIA.toFixed(0)}% IA</spaún>
+                        <span class="badge" style="background:${scoreColor}15; color:${scoreColor}; border:1px solid ${scoreColor}30; font-weight:700; font-size:0.65rem;">${c.scoreIA.toFixed(0)}% IA</span>
                     </div>
                 </div>
                 <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:0.6rem; color:var(--text-light); line-height:1.4;">${c.nombre}</h4>
@@ -934,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-top:1px solid rgba(148,163,184,0.08); padding-top:0.4rem;">
-                    <spaún style="color:var(--text-dark); font-size:0.75rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.comprador}">${c.comprador}</spaún>
+                    <span style="color:var(--text-dark); font-size:0.75rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.comprador}">${c.comprador}</span>
                     <strong style="color:var(--secondary); font-family:monospace;">${formatCLP(c.presupuesto)}</strong>
                 </div>
             </div>
@@ -977,7 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetContent = document.getElementById(subTabId);
         if (targetContent) targetContent.classList.add('active');
 
-        // Haúndle charts resize or render if switching strategy/competitors tabs
+        // Handle charts resize or render if switching strategy/competitors tabs
         if (subTabId === 'sub-tab-strategy') {
             // redraw sensitivity
             if (window.lastAnalysisData) {
@@ -995,7 +995,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // MELIPULSE CHILE â€” Motor de Cotización en Tiempo Real
     // =====================================================
 
-    // Static fallback: uses local fixture suppliers when Djaúngo is unavailable
+    // Static fallback: uses local fixture suppliers when Django is unavailable
     function matchItemsWithSuppliersStatic(cot) {
         const suppliers = window.DATA_FIXTURES.PROVEEDORES_LOCALES;
         const rubros = window.DATA_FIXTURES.RUBROS;
@@ -1009,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const matchedItems = [];
         let totalCost = 0;
         let totalBid = 0;
-        const totalQty = items.reduce((sum, it) => sum + (it.caúntidad || 1), 0);
+        const totalQty = items.reduce((sum, it) => sum + (it.cantidad || 1), 0);
         const avgUnitBudget = cot.presupuesto / (totalQty || 1);
         items.forEach((item, index) => {
             const itemSupplier = regionalSuppliers[index % regionalSuppliers.length] || bestSupplier;
@@ -1018,14 +1018,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const markup = 1.0 + rubro.margen_promedio;
             let suggestedBidUnit = discountedCost * markup;
             if (suggestedBidUnit > avgUnitBudget) suggestedBidUnit = avgUnitBudget * 0.94;
-            const qty = item.caúntidad || 1;
+            const qty = item.cantidad || 1;
             const itemTotalCost = discountedCost * qty;
             const itemTotalBid = suggestedBidUnit * qty;
             const itemMargin = itemTotalBid - itemTotalCost;
             const marginPct = (itemMargin / itemTotalBid) * 100;
             matchedItems.push({
                 producto: item.producto || `Insumo Especializado ${index + 1}`,
-                caúntidad: qty, unidad: item.unidad || 'Unidad',
+                cantidad: qty, unidad: item.unidad || 'Unidad',
                 proveedor: itemSupplier.nombre, source: 'fallback_estatico',
                 costoUnitario: discountedCost, costoTotal: itemTotalCost,
                 precioHistoricoUnitario: avgUnitBudget, precioSugeridoUnitario: suggestedBidUnit,
@@ -1044,11 +1044,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function quoteItemsWithMeliPulse(cot) {
         const items = (cot.items || []).map(it => ({
             producto: it.producto,
-            caúntidad: it.caúntidad || 1
+            cantidad: it.cantidad || 1
         }));
 
         try {
-            // Determine API base: point to local Djaúngo if on github.io or local file
+            // Determine API base: point to local Django if on github.io or local file
             let API_BASE = '';
             if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || window.location.port === '5500') {
                 API_BASE = 'http://127.0.0.1:8000';
@@ -1074,11 +1074,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const matchedItems = data.quoted_items.map((q, index) => {
                 const originalItem = (cot.items || [])[index] || {};
-                const qty = q.caúntidad || originalItem.caúntidad || 1;
+                const qty = q.cantidad || originalItem.cantidad || 1;
                 const unitCost = q.unit_price || 0;
                 const totalItemCost = q.total_cost || (unitCost * qty);
                 let bidUnit = unitCost * markup;
-                const budget_per_unit = cot.presupuesto / ((cot.items || []).reduce((s, i) => s + (i.caúntidad || 1), 0) || 1);
+                const budget_per_unit = cot.presupuesto / ((cot.items || []).reduce((s, i) => s + (i.cantidad || 1), 0) || 1);
                 if (bidUnit > budget_per_unit) bidUnit = budget_per_unit * 0.94;
                 const itemTotalBid = bidUnit * qty;
                 const itemMargin = itemTotalBid - totalItemCost;
@@ -1089,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 return {
                     producto: q.producto || originalItem.producto || `Ítem `,
-                    caúntidad: qty,
+                    cantidad: qty,
                     unidad: originalItem.unidad || 'Unidad',
                     proveedor: q.source || 'MercadoLibre Chile',
                     source: q.source || 'MercadoLibre Chile',
@@ -1115,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return { items: matchedItems, totalCost, totalBid, totalMargin, totalMarginPct, source: 'melipulse_realtime' };
 
         } catch (err) {
-            // Djaúngo server unavailable â€” return null to trigger fallback
+            // Django server unavailable â€” return null to trigger fallback
             return null;
         }
     }
@@ -1137,14 +1137,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>
         `).join('');
         return `
-            <div class="quote-status-baúnner warning" id="meli-status-baúnner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="aúnimation:spin 1s linear infinite;flex-shrink:0;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg>
-                Buscaúndo opciones en el mercado para ${items.length} Ítem${items.length !== 1 ? 's' : ''}...
+            <div class="quote-status-banner warning" id="meli-status-banner">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite;flex-shrink:0;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg>
+                Buscando opciones en el mercado para ${items.length} Ítem${items.length !== 1 ? 's' : ''}...
             </div>
             <div class="table-container">
                 <table class="cost-table">
                     <thead><tr>
-                        <th>Ítem Solicitado</th><th>Caúnt.</th><th>Fuente / Proveedor</th>
+                        <th>Ítem Solicitado</th><th>Cant.</th><th>Fuente / Proveedor</th>
                         <th>Precio Unit. Real</th><th>Costo Total</th>
                         <th>Precio Sugerido</th><th>Total Oferta</th><th>Margen Est.</th><th>Acciones</th>
                     </tr></thead>
@@ -1160,20 +1160,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemsWithError = matchData.items.filter(i => i.error).length;
         const itemsOk = matchData.items.length - itemsWithError;
 
-        // Status baúnner
-        let baúnnerHtml = '';
+        // Status banner
+        let bannerHtml = '';
         if (isRealtime && itemsWithError === 0) {
-            baúnnerHtml = `<div class="quote-status-baúnner success">
+            bannerHtml = `<div class="quote-status-banner success">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
-                ${matchData.items.length} Ítem${matchData.items.length !== 1 ? 's' : ''} cotizados en tiempo real mediaúnte Inteligencia de Precios.
+                ${matchData.items.length} Ítem${matchData.items.length !== 1 ? 's' : ''} cotizados en tiempo real mediante Inteligencia de Precios.
             </div>`;
         } else if (isRealtime && itemsWithError > 0) {
-            baúnnerHtml = `<div class="quote-status-baúnner warning">
+            bannerHtml = `<div class="quote-status-banner warning">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                ${itemsOk} Ítem${itemsOk !== 1 ? 's' : ''} cotizados en tiempo real. ${itemsWithError} sin precio disponible (usaúndo referencia estática).
+                ${itemsOk} Ítem${itemsOk !== 1 ? 's' : ''} cotizados en tiempo real. ${itemsWithError} sin precio disponible (usando referencia estática).
             </div>`;
         } else {
-            baúnnerHtml = `<div class="quote-status-baúnner warning">
+            bannerHtml = `<div class="quote-status-banner warning">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 Precios de referencia (cotización local). Presione "Cotizar en MercadoLibre" para precios reales.
             </div>`;
@@ -1189,26 +1189,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const productCell = it.permalink
                 ? `<div class="meli-product-cell">
                     ${it.image ? `<img src="${it.image}" alt="" class="meli-product-thumb" onerror="this.style.display='none'">` : ''}
-                    <a href="${it.permalink}" target="_blaúnk" rel="noopener" title="${it.producto}">${it.producto}</a>
+                    <a href="${it.permalink}" target="_blank" rel="noopener" title="${it.producto}">${it.producto}</a>
                    </div>`
-                : `<spaún style="font-weight:600;font-size:0.8rem;">${it.producto}</spaún>`;
+                : `<span style="font-weight:600;font-size:0.8rem;">${it.producto}</span>`;
 
             const priceCell = it.error
-                ? `<spaún class="real-price-tag error-price">No disponible</spaún>`
-                : `<spaún class="real-price-tag${it.free_shipping ? ' free-ship' : ''}">${formatCLP(it.costoUnitario)}</spaún>
-                   ${it.free_shipping ? '<spaún class="free-ship-badge">Gratis</spaún>' : ''}`;
+                ? `<span class="real-price-tag error-price">No disponible</span>`
+                : `<span class="real-price-tag${it.free_shipping ? ' free-ship' : ''}">${formatCLP(it.costoUnitario)}</span>
+                   ${it.free_shipping ? '<span class="free-ship-badge">Gratis</span>' : ''}`;
 
-            const marginColor = it.marginPct >= 15 ? 'var(--success)' : it.marginPct >= 5 ? 'var(--warning)' : 'var(--daúnger)';
+            const marginColor = it.marginPct >= 15 ? 'var(--success)' : it.marginPct >= 5 ? 'var(--warning)' : 'var(--danger)';
 
             return `<tr>
                 <td>${productCell}</td>
-                <td style="font-size:0.8rem;">${it.caúntidad} ${it.unidad}</td>
-                <td><spaún class="source-badge ${sourceClass}">${sourceLabel}</spaún></td>
+                <td style="font-size:0.8rem;">${it.cantidad} ${it.unidad}</td>
+                <td><span class="source-badge ${sourceClass}">${sourceLabel}</span></td>
                 <td>${priceCell}</td>
                 <td style="font-family:monospace;font-weight:600;">${formatCLP(it.costoTotal)}</td>
                 <td style="font-family:monospace;color:var(--text-muted);font-size:0.8rem;">${formatCLP(it.precioSugeridoUnitario)}</td>
                 <td style="font-family:monospace;font-weight:700;color:var(--secondary);">${formatCLP(it.precioSugeridoTotal)}</td>
-                <td><spaún style="color:${marginColor};font-weight:700;font-size:0.8rem;">${it.marginPct.toFixed(0)}%</spaún></td>
+                <td><span style="color:${marginColor};font-weight:700;font-size:0.8rem;">${it.marginPct.toFixed(0)}%</span></td>
                 <td>
                     <button class="btn" style="padding:4px 8px; font-size:0.7rem; background:rgba(99,102,241,0.15); color:var(--primary-light); border:1px solid rgba(99,102,241,0.3); border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:4px;" onclick="window.openQuoteModal(${index}, '${it.producto.replace(/'/g, "\\'")}')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Opciones
@@ -1218,7 +1218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
 
         const footRow = `<tr style="border-top:2px solid rgba(148,163,184,0.15);">
-            <td colspaún="3" style="font-weight:700;color:var(--text-light);font-size:0.85rem;">TOTAL PROYECTADO</td>
+            <td colspan="3" style="font-weight:700;color:var(--text-light);font-size:0.85rem;">TOTAL PROYECTADO</td>
             <td></td>
             <td style="font-family:monospace;color:var(--text-light);font-weight:700;">${formatCLP(matchData.totalCost)}</td>
             <td></td>
@@ -1227,11 +1227,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <td></td>
         </tr>`;
 
-        return `${baúnnerHtml}
+        return `${bannerHtml}
             <div class="table-container">
                 <table class="cost-table">
                     <thead><tr>
-                        <th>Ítem / Producto</th><th>Caúnt.</th><th>Fuente</th>
+                        <th>Ítem / Producto</th><th>Cant.</th><th>Fuente</th>
                         <th>Precio Unit. Real</th><th>Costo Total</th>
                         <th>Precio Sugerido</th><th>Total Oferta</th><th>Margen Est.</th><th>Acciones</th>
                     </tr></thead>
@@ -1241,27 +1241,27 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="quote-summary-bar">
                 <div class="summary-item">
-                    <spaún class="summary-label">Costo Adquisición</spaún>
-                    <spaún class="summary-value cost">${formatCLP(matchData.totalCost)}</spaún>
+                    <span class="summary-label">Costo Adquisición</span>
+                    <span class="summary-value cost">${formatCLP(matchData.totalCost)}</span>
                 </div>
                 <div class="summary-item">
-                    <spaún class="summary-label">Oferta Sugerida IA</spaún>
-                    <spaún class="summary-value bid">${formatCLP(matchData.totalBid)}</spaún>
+                    <span class="summary-label">Oferta Sugerida IA</span>
+                    <span class="summary-value bid">${formatCLP(matchData.totalBid)}</span>
                 </div>
                 <div class="summary-item">
-                    <spaún class="summary-label">Margen Neto</spaún>
-                    <spaún class="summary-value margin">${matchData.totalMarginPct.toFixed(1)}%</spaún>
+                    <span class="summary-label">Margen Neto</span>
+                    <span class="summary-value margin">${matchData.totalMarginPct.toFixed(1)}%</span>
                 </div>
                 <div class="summary-item">
-                    <spaún class="summary-label">Fuente Datos</spaún>
-                    <spaún style="font-size:0.78rem;font-weight:600;color:${isRealtime ? '#3483FA' : 'var(--text-dark)'}">
+                    <span class="summary-label">Fuente Datos</span>
+                    <span style="font-size:0.78rem;font-weight:600;color:${isRealtime ? '#3483FA' : 'var(--text-dark)'}">
                         ${isRealtime ? 'ðŸ”µ MeliPulse Tiempo Real' : 'âšª Referencia Estática'}
-                    </spaún>
+                    </span>
                 </div>
             </div>`;
     }
 
-    // Modal Maúnual Quote Logic
+    // Modal Manual Quote Logic
     window.openQuoteModal = function(itemIndex, query) {
         document.getElementById('quote-search-input').value = query;
         document.getElementById('quote-search-modal').style.display = 'flex';
@@ -1275,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.performQuoteSearch = async function(itemIndex, query) {
         const resultsContainer = document.getElementById('quote-search-results');
-        resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-muted);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="aúnimation:spin 1s linear infinite;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg><p style="margin-top:1rem;">Buscaúndo alternativas en línea...</p></div>`;
+        resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-muted);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg><p style="margin-top:1rem;">Buscando alternativas en línea...</p></div>`;
         
         try {
             let API_BASE = '';
@@ -1293,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Smart auto-select tab based on query (Mercado Libre is bad for construction materials)
             const qLower = query.toLowerCase();
-            const constWords = ['pino', 'madera', 'cemento', 'zinc', 'fierro', 'dimensionado', 'plaúncha', 'volcaúnita', 'osb', 'terciado', 'hormigon', 'ladrillo', 'arena', 'ripio', 'grava', 'acero', 'perfil', 'tubo', 'pvc', 'cobre'];
+            const constWords = ['pino', 'madera', 'cemento', 'zinc', 'fierro', 'dimensionado', 'plancha', 'volcanita', 'osb', 'terciado', 'hormigon', 'ladrillo', 'arena', 'ripio', 'grava', 'acero', 'perfil', 'tubo', 'pvc', 'cobre'];
             if ((constWords.some(w => qLower.includes(w)) || window.quoteSearchResultsCache.meli.length === 0) && window.quoteSearchResultsCache.other.length > 0) {
                 window.currentQuoteTab = 'other';
             } else {
@@ -1303,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch(err) {
             // Static fallback for GitHub Pages demo mode
-            const mockPrice = Math.floor(Math.raúndom() * 50000) + 10000;
+            const mockPrice = Math.floor(Math.random() * 50000) + 10000;
             window.quoteSearchResultsCache = {
                 meli: [
                     { title: query + ' (Opción Recomendada)', price: mockPrice, source: 'MercadoLibre Chile', free_shipping: true, link: '#', image: '' },
@@ -1325,16 +1325,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const tabsHtml = `<div style="display:flex; gap:1rem; align-items:center; border-bottom:1px solid rgba(148,163,184,0.2); margin-bottom:1rem; padding-bottom:0.75rem;">
             <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Origen de los resultados:</label>
-            <select onchaúnge="window.currentQuoteTab=this.value; window.renderQuoteResults(${itemIndex}, ${isDemo})" style="flex:1; background:rgba(30,41,59,0.8); border:1px solid rgba(148,163,184,0.2); color:var(--text-light); padding:0.4rem; border-radius:4px; font-size:0.8rem; cursor:pointer;">
+            <select onchange="window.currentQuoteTab=this.value; window.renderQuoteResults(${itemIndex}, ${isDemo})" style="flex:1; background:rgba(30,41,59,0.8); border:1px solid rgba(148,163,184,0.2); color:var(--text-light); padding:0.4rem; border-radius:4px; font-size:0.8rem; cursor:pointer;">
                 <option value="meli" ${window.currentQuoteTab === 'meli' ? 'selected' : ''}>Mercado Libre (${window.quoteSearchResultsCache.meli.length} opciones)</option>
                 <option value="other" ${window.currentQuoteTab === 'other' ? 'selected' : ''}>Top 20 Recomendadas por Google Nacional (${window.quoteSearchResultsCache.other.length} opciones)</option>
             </select>
         </div>`;
 
-        let demoHtml = isDemo ? `<div style="background:rgba(234,179,8,0.1); color:var(--warning); padding:8px; border-radius:4px; font-size:0.75rem; text-align:center; margin-bottom:1rem;">Modo demostración offline. Mostraúndo alternativas simuladas.</div>` : '';
+        let demoHtml = isDemo ? `<div style="background:rgba(234,179,8,0.1); color:var(--warning); padding:8px; border-radius:4px; font-size:0.75rem; text-align:center; margin-bottom:1rem;">Modo demostración offline. Mostrando alternativas simuladas.</div>` : '';
 
         if (activeData.length === 0) {
-            resultsContainer.innerHTML = tabsHtml + demoHtml + `<div style="padding:2rem; text-align:center; color:var(--text-muted);">No se encontróaron opciones en esta pestaña.</div>`;
+            resultsContainer.innerHTML = tabsHtml + demoHtml + `<div style="padding:2rem; text-align:center; color:var(--text-muted);">No se encontraron opciones en esta pestaña.</div>`;
             return;
         }
 
@@ -1348,8 +1348,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="flex:1;">
                     <h5 style="margin:0 0 0.25rem 0; font-size:0.85rem; color:var(--text-light); line-height:1.2;">${r.title}</h5>
                     <div style="font-size:0.7rem; color:var(--text-muted);">
-                        <spaún style="background:rgba(52, 131, 250, 0.15); color:#3483FA; padding:1px 4px; border-radius:2px; font-weight:600;">${r.source}</spaún>
-                        ${r.free_shipping ? '<spaún style="color:var(--success); margin-left:8px; font-weight:600;">Envío Gratis</spaún>' : ''}
+                        <span style="background:rgba(52, 131, 250, 0.15); color:#3483FA; padding:1px 4px; border-radius:2px; font-weight:600;">${r.source}</span>
+                        ${r.free_shipping ? '<span style="color:var(--success); margin-left:8px; font-weight:600;">Envío Gratis</span>' : ''}
                     </div>
                 </div>
                 <div style="text-align:right;">
@@ -1364,7 +1364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.exportToPDF = function() {
         if (typeof html2pdf === 'undefined') {
-            alert("El generador de PDF aún se está cargaúndo. Inténtelo en unos segundos.");
+            alert("El generador de PDF aún se está cargando. Inténtelo en unos segundos.");
             return;
         }
         
@@ -1393,24 +1393,24 @@ document.addEventListener('DOMContentLoaded', () => {
             <tr style="border-bottom: 1px solid #f1f5f9;">
                 <td style="padding:12px; color:#334155; font-size:12px; line-height:1.4;">${it.producto || 'Ítem sin nombre'}</td>
                 <td style="padding:12px; text-align:center; color:#475569; font-size:12px;">$ ${Math.round(it.precioSugeridoUnitario || 0).toLocaleString('es-CL')}</td>
-                <td style="padding:12px; text-align:center; color:#475569; font-weight:600; font-size:12px;">${it.caúntidad || 1}</td>
+                <td style="padding:12px; text-align:center; color:#475569; font-weight:600; font-size:12px;">${it.cantidad || 1}</td>
                 <td style="padding:12px; text-align:right; color:#0f172a; font-weight:600; font-size:12px;">$ ${Math.round(it.precioSugeridoTotal || 0).toLocaleString('es-CL')}</td>
             </tr>`;
         });
 
         container.innerHTML = `
-        <div style="font-family: 'Inter', Helvetica, saúns-serif; color: #1e293b; width: 720px; margin: 0 auto; padding: 30px; background: #fff;">
+        <div style="font-family: 'Inter', Helvetica, sans-serif; color: #1e293b; width: 720px; margin: 0 auto; padding: 30px; background: #fff;">
             
             <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #e2e8f0; padding-bottom: 25px;">
                 <div style="flex:1;">
                     <h1 style="margin:0; font-size:28px; color:#2563eb; display:flex; align-items:center;">
-                        <spaún style="font-weight:900; letter-spacing:-2px; margin-right:8px;">TE</spaún> 
-                        <spaún style="font-size:18px; font-weight:bold; color:#0f172a; line-height:1.2;">Tecno<br><spaún style="font-weight:normal; color:#64748b;">Express</spaún></spaún>
+                        <span style="font-weight:900; letter-spacing:-2px; margin-right:8px;">TE</span> 
+                        <span style="font-size:18px; font-weight:bold; color:#0f172a; line-height:1.2;">Tecno<br><span style="font-weight:normal; color:#64748b;">Express</span></span>
                     </h1>
                     <div style="font-size:12px; margin-top:12px; color:#64748b; line-height:1.6;">
-                        Saúntiago - Chile - Talca<br>
-                        <spaún style="color:#3b82f6;">www.tecnoexpress.com</spaún><br>
+                        Santiago - Chile - Talca<br>
+                        <span style="color:#3b82f6;">www.tecnoexpress.com</span><br>
                         +56 9 97913325 / +56 9 931376854<br>
                         Rut: 77.043.858-6
                     </div>
@@ -1427,7 +1427,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- Client section -->
             <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 15px 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
-                <h3 style="margin: 0 0 8px 0; font-size: 11px; color: #64748b; text-traúnsform: uppercase; letter-spacing: 0.5px;">Preparado para</h3>
+                <h3 style="margin: 0 0 8px 0; font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Preparado para</h3>
                 <div style="font-size:13px; line-height:1.6;">
                     <div style="font-size: 15px; font-weight:bold; color:#0f172a;">${cot.comprador || 'I. MUNICIPALIDAD'}</div>
                     <div style="color: #334155; margin-top:2px;">Rut: ${cot.rut || '69.100.200-4'}</div>
@@ -1441,7 +1441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
                         <th style="padding:12px; text-align:left; color:#0f172a; font-weight:700;">Descripción del Ítem</th>
                         <th style="padding:12px; text-align:center; color:#0f172a; font-weight:700; width:100px;">Precio Unit.</th>
-                        <th style="padding:12px; text-align:center; color:#0f172a; font-weight:700; width:60px;">Caúnt.</th>
+                        <th style="padding:12px; text-align:center; color:#0f172a; font-weight:700; width:60px;">Cant.</th>
                         <th style="padding:12px; text-align:right; color:#0f172a; font-weight:700; width:110px;">Total</th>
                     </tr>
                 </thead>
@@ -1452,20 +1452,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- Footer section: Terms & Totals -->
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <!-- Left: Baúnk & Terms -->
+                <!-- Left: Bank & Terms -->
                 <div style="width: 50%; font-size: 11px;">
                     <div style="margin-bottom: 20px;">
-                        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #0f172a; font-weight: 700; text-traúnsform: uppercase;">Datos Baúncarios</h4>
+                        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #0f172a; font-weight: 700; text-transform: uppercase;">Datos Bancarios</h4>
                         <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; line-height: 1.6; color: #334155;">
                             <strong style="color: #0f172a; font-size:12px;">Tecnoexpress SpA</strong><br>
                             RUT: 77.043.858-6<br>
-                            Baúnco Estado<br>
+                            Banco Estado<br>
                             Cuenta Vista: 43571636876<br>
                             chiletecnoexpress@gmail.com
                         </div>
                     </div>
                     <div>
-                        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #0f172a; font-weight: 700; text-traúnsform: uppercase;">Términos y Condiciones</h4>
+                        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #0f172a; font-weight: 700; text-transform: uppercase;">Términos y Condiciones</h4>
                         <ul style="margin: 0; padding-left: 15px; color: #475569; line-height: 1.6;">
                             <li>El pago será realizado a 30 días contra factura recibida conforme.</li>
                             <li>Cotización válida por 30 días.</li>
@@ -1507,7 +1507,7 @@ document.addEventListener('DOMContentLoaded', () => {
             margin:       [0, 0, 0, 0],
             filename:     `Cotizacion_${cot.codigo}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2caúnvas:  { scale: 2, useCORS: true, logging: false },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
             jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
 
@@ -1530,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update item properties
         item.producto = title;
         item.costoUnitario = price;
-        item.costoTotal = price * item.caúntidad;
+        item.costoTotal = price * item.cantidad;
         item.permalink = link;
         item.image = image;
         item.source = source;
@@ -1538,11 +1538,11 @@ document.addEventListener('DOMContentLoaded', () => {
         item.error = false;
         
         let bidUnit = price * markup;
-        const budget_per_unit = cot.presupuesto / ((cot.items || []).reduce((s, i) => s + (i.caúntidad || 1), 0) || 1);
+        const budget_per_unit = cot.presupuesto / ((cot.items || []).reduce((s, i) => s + (i.cantidad || 1), 0) || 1);
         if (bidUnit > budget_per_unit) bidUnit = budget_per_unit * 0.94;
         
         item.precioSugeridoUnitario = bidUnit;
-        item.precioSugeridoTotal = bidUnit * item.caúntidad;
+        item.precioSugeridoTotal = bidUnit * item.cantidad;
         item.margen = item.precioSugeridoTotal - item.costoTotal;
         item.marginPct = item.precioSugeridoTotal > 0 ? (item.margen / item.precioSugeridoTotal) * 100 : 0;
 
@@ -1551,14 +1551,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.lastMatchData.totalBid = window.lastMatchData.items.reduce((s, it) => s + it.precioSugeridoTotal, 0);
         window.lastMatchData.totalMargin = window.lastMatchData.totalBid - window.lastMatchData.totalCost;
         window.lastMatchData.totalMarginPct = window.lastMatchData.totalBid > 0 ? (window.lastMatchData.totalMargin / window.lastMatchData.totalBid) * 100 : 0;
-        window.lastMatchData.source = 'custom_maúnual_selection';
+        window.lastMatchData.source = 'custom_manual_selection';
 
         // Re-render table
         const wrapper = document.getElementById('costs-table-wrapper');
         if (wrapper) wrapper.innerHTML = renderCostsTable(window.lastMatchData, cot);
     };
 
-    // Main entry point: fetches MeliPulse prices aúnd renders the costs tab
+    // Main entry point: fetches MeliPulse prices and renders the costs tab
     async function loadAndRenderCostsTab(cot, containerEl) {
         // Show skeleton immediately
         containerEl.innerHTML = `
@@ -1566,7 +1566,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="card-header" style="padding:0.5rem 0 0.75rem 0; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
                     <h4 style="font-size:0.85rem; font-weight:600; color:var(--text-light);">Cotizador Inteligente</h4>
                     <div style="display:flex;gap:8px;align-items:center;">
-                        <spaún style="font-size:0.7rem;color:var(--text-muted);">Cotización rápida en el mercado nacional</spaún>
+                        <span style="font-size:0.7rem;color:var(--text-muted);">Cotización rápida en el mercado nacional</span>
                         <button class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem; display:flex; align-items:center; gap:4px; background:var(--success); border-color:var(--success);" onclick="window.saveBid()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                             Guardar Licitación
@@ -1595,8 +1595,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function renderCotAnalytics(cot) {
-        const paúnel = document.getElementById('cot-aúnalytics-paúnel');
-        if (!paúnel) return;
+        const panel = document.getElementById('cot-analytics-panel');
+        if (!panel) return;
 
         const rubroId = cot.rubro;
         const budget = cot.presupuesto;
@@ -1604,7 +1604,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Filtrar histórico de compras similares basándose en:
         // 1. Rubro coincidente
         // 2. Años seleccionados por el usuario
-        // 3. Raúngo de presupuesto (+/- 40%)
+        // 3. Rango de presupuesto (+/- 40%)
         const years = window.selectedYears || ['2023', '2024', '2025', '2026'];
         
         let similarHistory = window.DATA_FIXTURES.HISTORIAL_LICITACIONES.filter(h => {
@@ -1636,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.lastSimilarHistory = similarHistory.slice(0, 6);
 
-        // Quick static estimate for the strategy paúnel while MeliPulse loads
+        // Quick static estimate for the strategy panel while MeliPulse loads
         const staticMatch = matchItemsWithSuppliersStatic(cot);
         const costVal = staticMatch.totalCost;
         const suggestedBidPrice = staticMatch.totalBid;
@@ -1648,30 +1648,30 @@ document.addEventListener('DOMContentLoaded', () => {
         window.lastAnalysisData = optimalSimData;
 
         // Renderizar el layout de sub-pestañas
-        paúnel.innerHTML = `
+        panel.innerHTML = `
             <!-- Encabezado Inteligente -->
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; border-bottom:1px solid rgba(148,163,184,0.1); padding-bottom:1rem; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <div style="display:flex; gap:6px; align-items:center;">
-                        <spaún style="font-size:0.75rem; text-traúnsform:uppercase; color:var(--text-muted); font-weight:700;">Inteligencia Diaria COT</spaún>
-                        <spaún class="badge" style="background:var(--success)15; color:var(--success); border:1px solid var(--success)30; font-weight:700; font-size:0.65rem; margin-left:4px;">Probabilidad de Éxito: ${cot.scoreIA.toFixed(0)}%</spaún>
+                        <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Inteligencia Diaria COT</span>
+                        <span class="badge" style="background:var(--success)15; color:var(--success); border:1px solid var(--success)30; font-weight:700; font-size:0.65rem; margin-left:4px;">Probabilidad de Éxito: ${cot.scoreIA.toFixed(0)}%</span>
                     </div>
                     <h3 style="font-size:1.15rem; font-weight:700; color:var(--text-light); margin-top:0.25rem;">${cot.nombre}</h3>
                     <div style="display:flex; gap:12px; font-size:0.8rem; color:var(--text-muted); margin-top:0.4rem; align-items:center;">
-                        <spaún>Cód: <code>${cot.codigo}</code></spaún>
-                        <spaún>â€¢</spaún>
-                        <spaún>Comprador: <strong>${cot.comprador}</strong></spaún>
+                        <span>Cód: <code>${cot.codigo}</code></span>
+                        <span>â€¢</span>
+                        <span>Comprador: <strong>${cot.comprador}</strong></span>
                     </div>
                 </div>
                 <div style="text-align:right;">
-                    <spaún style="font-size:0.75rem; text-traúnsform:uppercase; color:var(--text-muted); font-weight:700;">Presupuesto de Compra</spaún>
+                    <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Presupuesto de Compra</span>
                     <div style="font-size:1.35rem; font-weight:800; color:var(--secondary); font-family:monospace; margin-top:0.2rem;">${formatCLP(budget)}</div>
-                    <spaún style="font-size:0.72rem; color:var(--text-dark); display:block; margin-top:0.25rem;">Región: ${cot.region.replace('Region de', 'R.').replace('Metropolitaúna', 'M.')}</spaún>
+                    <span style="font-size:0.72rem; color:var(--text-dark); display:block; margin-top:0.25rem;">Región: ${cot.region.replace('Region de', 'R.').replace('Metropolitana', 'M.')}</span>
                 </div>
             </div>
 
             <!-- Navegación de Sub-Pestañas -->
-            <div class="aúnalytics-sub-tabs">
+            <div class="analytics-sub-tabs">
                 <button class="sub-tab-btn active" onclick="window.switchSubTab('sub-tab-costs')">ðŸ›ï¸ Cotizar en Mercado Libre</button>
                 <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-strategy')">Estrategia y Simulación IA</button>
                 <button class="sub-tab-btn" onclick="window.switchSubTab('sub-tab-competitors')">Competencia Histórica</button>
@@ -1681,19 +1681,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="sub-tab-strategy" class="sub-tab-content">
                 <div class="stats-mini-grid" style="margin-bottom:1.25rem;">
                     <div class="stat-mini-card">
-                        <spaún>Costo de Compra Est.</spaún>
+                        <span>Costo de Compra Est.</span>
                         <div style="color:var(--text-muted);">${formatCLP(costVal)}</div>
                     </div>
                     <div class="stat-mini-card">
-                        <spaún>Margen Proyectado</spaún>
+                        <span>Margen Proyectado</span>
                         <div style="color:var(--success);">${totalMarginPct.toFixed(1)}%</div>
                     </div>
                     <div class="stat-mini-card">
-                        <spaún>Prob. de Gaúnar</spaún>
+                        <span>Prob. de Ganar</span>
                         <div style="color:${getProbColor(cot.scoreIA)}; font-weight:800;">${cot.scoreIA.toFixed(0)}%</div>
                     </div>
                     <div class="stat-mini-card" style="border-color:var(--secondary); background:rgba(99,102,241,0.06);">
-                        <spaún>Precio Oferta IA</spaún>
+                        <span>Precio Oferta IA</span>
                         <div style="color:var(--secondary); font-size:1rem; font-weight:800;">${formatCLP(suggestedBidPrice)}</div>
                     </div>
                 </div>
@@ -1708,7 +1708,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- CONTENIDO SUB-PESTAÑA 2: COSTOS Y PROVEEDORES â€” MeliPulse Tiempo Real -->
             <div id="sub-tab-costs" class="sub-tab-content active">
                 <div id="melipulse-costs-container">
-                    <!-- Cargaúndo... -->
+                    <!-- Cargando... -->
                 </div>
             </div>
 
@@ -1728,8 +1728,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <thead>
                                 <tr>
                                     <th>Proceso Histórico</th>
-                                    <th>Orgaúnismo</th>
-                                    <th>Proveedor Gaúnador</th>
+                                    <th>Organismo</th>
+                                    <th>Proveedor Ganador</th>
                                     <th>Monto Adjudicado</th>
                                     <th>Año</th>
                                 </tr>
@@ -1767,16 +1767,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${similarHistory.flatMap(h => (h.competidores_participaúntes || []).map(comp => ({ ...comp, code: h.codigo, year: h.fecha_publicacion.split('-')[0] }))).slice(0, 6).map(c => `
+                                ${similarHistory.flatMap(h => (h.competidores_participantes || []).map(comp => ({ ...comp, code: h.codigo, year: h.fecha_publicacion.split('-')[0] }))).slice(0, 6).map(c => `
                                     <tr>
                                         <td style="font-weight:500;">${c.nombre}</td>
                                         <td style="font-family:monospace; font-weight:600;">${formatCLP(c.precio)}</td>
                                         <td><code style="font-family:monospace; font-size:0.7rem; color:var(--text-dark);">${c.code}</code></td>
                                         <td style="font-size:0.8rem; color:var(--text-muted);">${c.year}</td>
                                         <td>
-                                            <spaún class="badge ${c.adjudicado ? 'badge-success' : 'badge-warning'}" style="font-size:0.65rem; padding: 2px 6px;">
+                                            <span class="badge ${c.adjudicado ? 'badge-success' : 'badge-warning'}" style="font-size:0.65rem; padding: 2px 6px;">
                                                 ${c.adjudicado ? 'Adjudicado' : 'Ofertado'}
-                                            </spaún>
+                                            </span>
                                         </td>
                                     </tr>
                                 `).join('')}
@@ -1842,12 +1842,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- BIDS REPOSITORY SYSTEM ---
 
     window.saveBid = function() {
-        if (!window.lastMatchData) { alert('Error: No se ha generado la estructura de cotización (lastMatchData no existe).'); return; }
-        if (!window.activeCotCode) { alert('Error: No hay un código de licitación activo.'); return; }
+        if (!window.lastMatchData || !window.activeCotCode) return;
         const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
-        if (!cot) { alert('Error: No se encontróó la licitación en los datos activos (' + window.activeCotCode + ').'); return; }
-        
-        try {
+        if (!cot) return;
 
         let bids = [];
         try { bids = JSON.parse(localStorage.getItem('my_bids')) || []; } catch(e){}
@@ -1875,9 +1872,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('my_bids', JSON.stringify(bids));
         alert('Licitación guardada exitosamente en el Repositorio de Participaciones.');
         window.renderBidsTable();
-        } catch(err) {
-            alert('Error al guardar: ' + err.message);
-        }
     };
 
     window.renderBidsTable = function() {
@@ -1888,7 +1882,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try { bids = JSON.parse(localStorage.getItem('my_bids')) || []; } catch(e){}
 
         if (bids.length === 0) {
-            tbody.innerHTML = '<tr><td colspaún="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">No tienes licitaciones guardadas aún.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">No tienes licitaciones guardadas aún.</td></tr>';
             return;
         }
 
@@ -1902,7 +1896,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="padding: 1rem; color: var(--text-muted); font-size: 0.85rem;">${dateStr}</td>
                 <td style="padding: 1rem; font-weight: 700; font-family: monospace;">${formatCLP(b.total)}</td>
                 <td style="padding: 1rem; text-align: center;">
-                    <spaún style="background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${b.estado}</spaún>
+                    <span style="background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${b.estado}</span>
                 </td>
                 <td style="padding: 1rem; text-align: right;">
                     <button class="btn" style="background: rgba(239, 68, 68, 0.15); color: #EF4444; border: none; padding: 4px 8px; font-size: 0.75rem;" onclick="window.deleteBid('${b.codigo}')">Eliminar</button>
