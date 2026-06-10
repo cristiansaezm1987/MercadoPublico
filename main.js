@@ -840,9 +840,27 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn("Usando motor sintético local (GitHub Pages mode)");
             if (!window.HISTORICAL_CACHE) {
                 window.HISTORICAL_CACHE = [];
-                const institutions = ["I MUNICIPALIDAD DE PUTAENDO", "HOSPITAL DE CURICO", "ILUSTRE MUNICIPALIDAD DE HUARA", "CORP NACIONAL FORESTAL", "HOSPITAL DR GUSTAVO FRICKE", "ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE", "CARABINEROS DE CHILE", "SERVICIO DE SALUD COQUIMBO", "MUNICIPALIDAD DE TEMUCO", "GOBIERNO REGIONAL DE AYSEN", "EJERCITO DE CHILE", "ARMADA DE CHILE", "JUNJI", "DIRECCION GENERAL DE AERONAUTICA"];
+                const institucionesPorRegion = {
+                    "Region de Arica y Parinacota": ["MUNICIPALIDAD DE ARICA", "SERVICIO DE SALUD ARICA"],
+                    "Region de Tarapaca": ["MUNICIPALIDAD DE IQUIQUE", "HOSPITAL REGIONAL DE IQUIQUE", "ILUSTRE MUNICIPALIDAD DE HUARA"],
+                    "Region de Antofagasta": ["MUNICIPALIDAD DE ANTOFAGASTA", "HOSPITAL REGIONAL DE ANTOFAGASTA"],
+                    "Region de Atacama": ["MUNICIPALIDAD DE COPIAPO", "SERVICIO DE SALUD ATACAMA"],
+                    "Region de Coquimbo": ["MUNICIPALIDAD DE LA SERENA", "SERVICIO DE SALUD COQUIMBO", "HOSPITAL SAN PABLO DE COQUIMBO"],
+                    "Region de Valparaiso": ["I MUNICIPALIDAD DE PUTAENDO", "HOSPITAL DR GUSTAVO FRICKE", "MUNICIPALIDAD DE VALPARAISO"],
+                    "Region Metropolitana": ["ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE"],
+                    "Region de OHiggins": ["MUNICIPALIDAD DE RANCAGUA", "HOSPITAL REGIONAL DE RANCAGUA"],
+                    "Region del Maule": ["HOSPITAL DE CURICO", "MUNICIPALIDAD DE TALCA", "SERVICIO DE SALUD MAULE", "MUNICIPALIDAD DE LINARES"],
+                    "Region de Nuble": ["MUNICIPALIDAD DE CHILLAN", "HOSPITAL HERMINDA MARTIN"],
+                    "Region del Biobio": ["MUNICIPALIDAD DE CONCEPCION", "HOSPITAL REGIONAL GUILLERMO GRANT BENAVENTE", "UNIVERSIDAD DEL BIO-BIO"],
+                    "Region de La Araucania": ["MUNICIPALIDAD DE TEMUCO", "HOSPITAL HERNAN HENRIQUEZ ARAVENA"],
+                    "Region de Los Rios": ["MUNICIPALIDAD DE VALDIVIA", "UNIVERSIDAD AUSTRAL DE CHILE"],
+                    "Region de Los Lagos": ["MUNICIPALIDAD DE PUERTO MONTT", "HOSPITAL BASE DE PUERTO MONTT", "MUNICIPALIDAD DE OSORNO"],
+                    "Region de Aysen": ["GOBIERNO REGIONAL DE AYSEN", "MUNICIPALIDAD DE COYHAIQUE"],
+                    "Region de Magallanes": ["MUNICIPALIDAD DE PUNTA ARENAS", "HOSPITAL CLINICO DE MAGALLANES"]
+                };
                 const rubros = [{id:"tecnologia", nombre:"Tecnologia y Software"}, {id:"salud", nombre:"Salud e Insumos Medicos"}, {id:"oficina", nombre:"Articulos de Oficina"}, {id:"construccion", nombre:"Construccion y Ferreteria"}, {id:"vehiculos", nombre:"Vehiculos y Repuestos"}, {id:"servicios", nombre:"Servicios Especializados"}];
-                const regiones = ["Region de Arica y Parinacota", "Region de Tarapaca", "Region de Antofagasta", "Region de Atacama", "Region de Coquimbo", "Region de Valparaiso", "Region Metropolitana", "Region de OHiggins", "Region del Maule", "Region de Nuble", "Region del Biobio", "Region de La Araucania", "Region de Los Rios", "Region de Los Lagos", "Region de Aysen", "Region de Magallanes"];
+                const regiones = Object.keys(institucionesPorRegion);
+                const nacionales = ["CORP NACIONAL FORESTAL", "CARABINEROS DE CHILE", "EJERCITO DE CHILE", "ARMADA DE CHILE", "JUNJI", "DIRECCION GENERAL DE AERONAUTICA"];
                 const estados = ["Publicada", "Adjudicada", "Desierta", "Cerrada", "Revocada"];
                 
                 let startD = new Date(2023, 0, 1);
@@ -858,14 +876,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (closeD < new Date() && Math.random() < 0.7) st = "Adjudicada";
                     let pres = Math.floor(Math.random() * 7100000) + 50000;
                     
+                    let reg = regiones[Math.floor(Math.random() * regiones.length)];
+                    let compList = institucionesPorRegion[reg];
+                    let comp = (Math.random() < 0.2) ? nacionales[Math.floor(Math.random() * nacionales.length)] : compList[Math.floor(Math.random() * compList.length)];
+                    
                     window.HISTORICAL_CACHE.push({
                         codigo: `${Math.floor(Math.random()*8999)+1000}-${Math.floor(Math.random()*899)+100}-COT${closeD.getFullYear().toString().substr(-2)}`,
                         nombre: `ADQUISICION DE ${r.nombre.toUpperCase()} REQ-${i}`,
                         tipo: "compra_agil",
                         rubro: r.id,
                         rubro_nombre: r.nombre,
-                        comprador: institutions[Math.floor(Math.random() * institutions.length)],
-                        region: regiones[Math.floor(Math.random() * regiones.length)],
+                        comprador: comp,
+                        region: reg,
                         estado: st,
                         presupuesto: pres,
                         precio_adjudicado: st === "Adjudicada" ? pres * (0.7 + Math.random()*0.28) : null,
@@ -877,6 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let filtered = window.HISTORICAL_CACHE;
             
+            const rubro = document.getElementById('rec-rubro')?.value || '';
             if (df) {
                 let start = new Date(df);
                 filtered = filtered.filter(x => new Date(x.fecha_cierre) >= start);
@@ -886,11 +909,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 end.setHours(23,59,59);
                 filtered = filtered.filter(x => new Date(x.fecha_cierre) <= end);
             }
-            if (region && region !== 'all') {
+            if (region && region !== 'all' && region !== '') {
                 filtered = filtered.filter(x => x.region === region);
             }
             if (status && status !== 'all') {
                 filtered = filtered.filter(x => x.estado.toLowerCase() === status.toLowerCase());
+            }
+            if (rubro && rubro !== '') {
+                filtered = filtered.filter(x => x.rubro === rubro);
             }
             
             if (order_by === 'recent') filtered.sort((a,b) => new Date(b.fecha_cierre) - new Date(a.fecha_cierre));
@@ -975,7 +1001,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="text-align:right;">Estado: <strong style="color:var(--warning);">${c.estado}</strong></div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-top:1px solid rgba(148,163,184,0.08); padding-top:0.4rem;">
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.4rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(148,163,184,0.08);">
+                    <span>?? ${c.region}</span><br>
+                    <span>??? ${c.rubro_nombre || 'Sin rubro'}</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
                     <span style="color:var(--text-dark); font-size:0.75rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.comprador}">${c.comprador}</span>
                     <strong style="color:var(--secondary); font-family:monospace;">${window.formatCLP(c.presupuesto)}</strong>
                 </div>
