@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -160,12 +160,27 @@
           
           <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:1rem;">
             <div class="form-group" style="margin-bottom:0;">
-              <label for="rec-rubro">Filtrar por Rubro</label>
-              <select id="rec-rubro"><option value="">-- Todos los rubros --</option></select>
+              <label for="rec-date-from">Desde</label>
+              <input type="date" id="rec-date-from" style="padding:0.4rem;border-radius:4px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.8);color:#fff;width:100%;">
             </div>
             <div class="form-group" style="margin-bottom:0;">
-              <label for="rec-region">Filtrar por Región</label>
-              <select id="rec-region"><option value="">-- Todas las regiones --</option></select>
+              <label for="rec-date-to">Hasta</label>
+              <input type="date" id="rec-date-to" style="padding:0.4rem;border-radius:4px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.8);color:#fff;width:100%;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="rec-region">Región</label>
+              <select id="rec-region"><option value="all">Todas las regiones</option></select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="rec-status">Estado</label>
+              <select id="rec-status">
+                <option value="all">Todos los estados</option>
+                <option value="Publicada">Publicada</option>
+                <option value="Adjudicada">Adjudicada</option>
+                <option value="Desierta">Desierta</option>
+                <option value="Cerrada">Cerrada</option>
+                <option value="Revocada">Revocada</option>
+              </select>
             </div>
           </div>
         </div>
@@ -207,27 +222,27 @@
             <h3 class="card-title">Compras Ágiles Disponibles (COTs)</h3>
             <span style="font-size:0.75rem; color:var(--text-muted);" id="cot-active-count">0 encontradas</span>
           </div>
-          <!-- Controles de ordenamiento y filtrado por fecha -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(148,163,184,0.08); background: rgba(148, 163, 184, 0.02);">
+          <!-- Controles de ordenamiento -->
+          <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(148,163,184,0.08); background: rgba(148, 163, 184, 0.02);">
             <div class="form-group" style="margin-bottom: 0;">
               <label for="cot-sort-by" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Ordenar por</label>
               <select id="cot-sort-by" style="font-size: 0.75rem; padding: 0.3rem 0.5rem; background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.15); border-radius: 4px; color: var(--text-light); width: 100%;">
-                <option value="cierre_asc">Fecha de Cierre (Próximas primero)</option>
-                <option value="pub_desc">Fecha de Publicación (Recientes primero)</option>
-                <option value="presupuesto_desc">Presupuesto (Mayor primero)</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="cot-date-filter" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Filtro Temporal</label>
-              <select id="cot-date-filter" style="font-size: 0.75rem; padding: 0.3rem 0.5rem; background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.15); border-radius: 4px; color: var(--text-light); width: 100%;">
-                <option value="all">Todas las online</option>
-                <option value="closing_soon">Cierran pronto (≤ 3 días)</option>
-                <option value="recently_pub">Publicadas esta semana</option>
+                <option value="recent">Más recientes primero</option>
+                <option value="oldest">Más antiguos primero</option>
+                <option value="budget_desc">Mayor presupuesto</option>
+                <option value="budget_asc">Menor presupuesto</option>
               </select>
             </div>
           </div>
           <div class="cot-list-container" id="cot-active-list" style="margin-top:1rem;">
-            <div style="text-align:center; color:var(--text-dark); padding:3rem;">Seleccione los años de interés y haga clic en "Refrescar Lectura" para sincronizar la base de datos de compras ágiles.</div>
+            <div style="text-align:center; color:var(--text-dark); padding:3rem;">Seleccione los filtros y haga clic en "Refrescar Lectura" para buscar en el histórico.</div>
+          </div>
+          
+          <!-- Paginacion -->
+          <div id="cot-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-top: 1px solid rgba(148,163,184,0.1);">
+              <button id="cot-page-prev" class="btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;" disabled>&laquo; Anterior</button>
+              <span id="cot-page-info" style="font-size: 0.85rem; color: var(--text-muted);">Página 1 de 1</span>
+              <button id="cot-page-next" class="btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;" disabled>Siguiente &raquo;</button>
           </div>
         </div>
 
