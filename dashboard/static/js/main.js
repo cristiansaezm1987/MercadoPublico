@@ -1370,7 +1370,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const matchData = customMatchData || matchData;
+        const matchData = customMatchData || window.lastMatchData;
         if (!matchData) return;
         
         const cot = customCot || window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === (customCot ? customCot.codigo : window.activeCotCode));
