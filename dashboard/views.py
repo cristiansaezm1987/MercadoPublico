@@ -232,6 +232,7 @@ def api_search_historical(request):
                 "items": infer_items_from_title(f["name"], f["amount"])
             })
             
+        total_items = len(records)
         page_param = request.GET.get('page_number', '1')
         
         if page_param == 'all':
