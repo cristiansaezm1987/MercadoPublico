@@ -77,9 +77,11 @@ def scrape_mercadopublico_excel(params: dict) -> list:
             files_after = set(os.listdir(download_dir))
             new_files = files_after - files_before
             if new_files:
-                filename = list(new_files)[0]
-                if not filename.endswith('.crdownload') and filename.endswith('.xlsx'):
-                    file_path = os.path.join(download_dir, filename)
+                for fn in new_files:
+                    if not fn.endswith('.crdownload') and fn.endswith('.xlsx'):
+                        file_path = os.path.join(download_dir, fn)
+                        break
+                if file_path:
                     break
                     
         if not file_path:
@@ -93,12 +95,17 @@ def scrape_mercadopublico_excel(params: dict) -> list:
             d = row.to_dict()
             # Map Excel columns to our JSON structure
             
-            # Helper to handle NaN
+            # Helper to handle NaN and weird encodings in column names
             def get_val(key, default=""):
-                val = d.get(key, default)
-                if pd.isna(val):
-                    return default
-                return val
+                if key in d:
+                    val = d[key]
+                    if not pd.isna(val): return val
+                # Fallback for weird characters (e.g. 'Fecha de Publicacin')
+                for k in d.keys():
+                    if key[:10] in k:
+                        val = d[k]
+                        if not pd.isna(val): return val
+                return default
                 
             estado_original = get_val("Estado")
             

@@ -895,10 +895,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return 0;
         });
 
-        // If no sort selected or default, let's sort by Score IA descending so user gets daily recommendations!
+        // If no sort selected or default, sort by publication date descending to match official site
         if (sortBy === 'cierre_asc' && rubroFilter === '' && regionFilter === '') {
-            // Sort by Score IA by default to suggest high-probability opportunities at the top!
-            activeCOTs.sort((a, b) => b.scoreIA - a.scoreIA);
+            activeCOTs.sort((a, b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion));
         }
 
         if (countEl) countEl.textContent = `${activeCOTs.length} encontradas`;
