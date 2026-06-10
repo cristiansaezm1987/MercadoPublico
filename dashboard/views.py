@@ -237,10 +237,10 @@ def api_tenders(request):
             "comprador": "SERVICIO DE SALUD DEL MAULE HOSPITAL DE CURICO - Farmacia",
             "region": "Region del Maule",
             "ciudad": "Curico",
-            "presupuesto": 450000,
+            "presupuesto": 6700000,
             "fecha_cierre": "2026-06-11T09:30:00",
             "items": [
-                {"producto": "Paracetamol inyectable 1gr", "cantidad": 200}
+                {"producto": "PARACETAMOL INYECTABLE 1 GR / 100 ML", "cantidad": 7000}
             ]
         },
         {
