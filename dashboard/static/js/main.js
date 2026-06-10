@@ -1364,15 +1364,17 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.innerHTML = tabsHtml + demoHtml + listHtml;
     };
 
-    window.exportToPDF = function() {
+    window.exportToPDF = function(customCot = null, customMatchData = null) {
         if (typeof html2pdf === 'undefined') {
             alert("El generador de PDF aún se está cargando. Inténtelo en unos segundos.");
             return;
         }
         
-        if (!window.lastMatchData || !window.activeCotCode) return;
+        const matchData = customMatchData || matchData;
+        if (!matchData) return;
         
-        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
+        const cot = customCot || window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === (customCot ? customCot.codigo : window.activeCotCode));
+        if (!cot) return;
         if (!cot) return;
 
         const container = document.getElementById('pdf-export-container');
@@ -1383,14 +1385,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const validUntil = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000)).toLocaleDateString('es-CL');
         
         let subtotal = 0;
-        window.lastMatchData.items.forEach(it => {
+        matchData.items.forEach(it => {
             subtotal += (it.precioSugeridoTotal || 0);
         });
         const iva = Math.round(subtotal * 0.19);
         const total = subtotal + iva;
 
         let rowsHtml = '';
-        window.lastMatchData.items.forEach(it => {
+        matchData.items.forEach(it => {
             rowsHtml += `
             <tr style="border-bottom: 1px solid #f1f5f9;">
                 <td style="padding:12px; color:#334155; font-size:12px; line-height:1.4;">${it.producto || 'Ítem sin nombre'}</td>
@@ -1862,7 +1864,9 @@ document.addEventListener('DOMContentLoaded', () => {
             comprador: cot.comprador,
             fecha: new Date().toISOString(),
             total: total,
-            estado: 'Guardada'
+            estado: 'Guardada',
+            matchData: window.lastMatchData,
+            cotObj: cot
         };
 
         if (existingIndex >= 0) {
@@ -1901,10 +1905,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${b.estado}</span>
                 </td>
                 <td style="padding: 1rem; text-align: right;">
-                    <button class="btn" style="background: rgba(239, 68, 68, 0.15); color: #EF4444; border: none; padding: 4px 8px; font-size: 0.75rem;" onclick="window.deleteBid('${b.codigo}')">Eliminar</button>
+                    <button class="btn" style="background: rgba(239, 68, 68, 0.15); color: #EF4444; border: none; padding: 4px 8px; font-size: 0.75rem;" onclick="window.downloadSavedPDF('${b.codigo}')" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6; border: none; padding: 4px 8px; font-size: 0.75rem; margin-right: 4px; cursor: pointer;">PDF</button>
+                    <button class="btn" style="background: rgba(239, 68, 68, 0.15); color: #EF4444; border: none; padding: 4px 8px; font-size: 0.75rem; cursor: pointer;" onclick="window.deleteBid('${b.codigo}')">Eliminar</button>
                 </td>
             </tr>`;
         }).join('');
+    };
+
+    
+    window.downloadSavedPDF = function(codigo) {
+        let bids = [];
+        try { bids = JSON.parse(localStorage.getItem('my_bids')) || []; } catch(e){}
+        const b = bids.find(x => x.codigo === codigo);
+        if (!b) return;
+        if (!b.cotObj || !b.matchData) {
+            alert('Este registro antiguo no tiene el formato para generar PDF.');
+            return;
+        }
+        window.exportToPDF(b.cotObj, b.matchData);
     };
 
     window.deleteBid = function(codigo) {
