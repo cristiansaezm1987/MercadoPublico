@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    window.formatCLP = function(val) {
+        if (!val && val !== 0) return '$0';
+        return '$' + Math.round(val).toLocaleString('es-CL');
+    }
     let activeTabId = 'tab-dashboard';
     let rubrosData = [];
     let recDebounceTimer = null;
@@ -158,10 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- UTILS ----
-    window.formatCLP = function(val) {
-        if (!val && val !== 0) return '$0';
-        return '$' + Math.round(val).toLocaleString('es-CL');
-    }
+    
 
     function formatDateShort(dateStr) {
         if (!dateStr || dateStr === 'N/A') return 'N/A';
