@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const d = new Date(dateStr);
             if (isNaN(d.getTime())) return dateStr.split('T')[0] || dateStr;
-            return d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            return d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '');
         } catch { return dateStr.split('T')[0] || dateStr; }
     }
 
@@ -820,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dt = document.getElementById('rec-date-to')?.value || '';
         const region = document.getElementById('rec-region')?.value || 'all';
         const status = document.getElementById('rec-status')?.value || 'all';
+        const llamado = document.getElementById('rec-llamado')?.value || 'all';
         const order_by = document.getElementById('cot-sort-by')?.value || 'recent';
         
         if (btnSync) {
@@ -829,7 +830,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (listContainer) listContainer.innerHTML = '<div style="text-align:center; padding:3rem;"><div class="spinner"></div><p>Sincronizando histórico...</p></div>';
 
         try {
-            let url = `/api/historical/?date_from=${df}&date_to=${dt}&region=${encodeURIComponent(region)}&status=${encodeURIComponent(status)}&order_by=${order_by}&page_number=${window.cotCurrentPage}`;
+            let url = `/api/historical/?date_from=${df}&date_to=${dt}&region=${encodeURIComponent(region)}&status=${encodeURIComponent(status)}&llamado=${encodeURIComponent(llamado)}&order_by=${order_by}&page_number=${window.cotCurrentPage}`;
             const res = await fetch(url);
             if (!res.ok) throw new Error("Backend not available");
             const data = await res.json();
@@ -899,6 +900,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 let stName = statusMap[stId];
                 
+                let llam = (llamado && llamado !== 'all') ? parseInt(llamado) : (Math.random() < 0.2 ? 2 : 1);
+                
                 window.HISTORICAL_CACHE.push({
                     codigo: `${Math.floor(Math.random()*8999)+1000}-${Math.floor(Math.random()*899)+100}-COT${closeD.getFullYear().toString().substr(-2)}`,
                     nombre: `ADQUISICION DE ${r.nombre.toUpperCase()} REQ-${i}`,
@@ -914,6 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     precio_adjudicado: stName === "Adjudicada" ? pres * (0.7 + Math.random()*0.28) : null,
                     fecha_publicacion: pubD.toISOString(),
                     fecha_cierre: closeD.toISOString(),
+                    llamado: llam,
                     items: [{producto: r.nombre + " - Insumo Generico", cantidad: Math.floor(Math.random()*50)+1}]
                 });
             }
@@ -1006,8 +1010,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.4rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(148,163,184,0.08);">
-                    <span>?? ${c.region}</span><br>
-                    <span>??? ${c.rubro_nombre || 'Sin rubro'}</span>
+                    <span>📍 ${c.region}</span><br>
+                    <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                        <span>🏷️ ${c.rubro_nombre || 'Sin rubro'}</span>
+                        <span style="color:var(--text-light); font-weight:600;">Llamado: ${c.llamado || 1}</span>
+                    </div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">

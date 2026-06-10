@@ -369,6 +369,7 @@ def api_search_historical(request):
     date_to_str = request.GET.get('date_to', '')
     region = request.GET.get('region', 'all')
     status = request.GET.get('status', 'all')
+    llamado = request.GET.get('llamado', 'all')
     
     start_date = datetime.datetime.now().date() - datetime.timedelta(days=60)
     end_date = datetime.datetime.now().date()
@@ -452,6 +453,8 @@ def api_search_historical(request):
         presupuesto = random.randint(50000, 7150000)
         precio_adj = presupuesto * random.uniform(0.7, 0.98) if st_name == "Adjudicada" else None
         
+        llam_val = int(llamado) if (llamado and llamado != 'all' and llamado != '') else (2 if random.random() < 0.2 else 1)
+        
         records.append({
             "codigo": f"{random.randint(1000, 9999)}-{random.randint(100, 999)}-COT{str(cierre.year)[-2:]}",
             "nombre": f"ADQUISICION DE {r['nombre'].upper()} REQ-{i}",
@@ -467,6 +470,7 @@ def api_search_historical(request):
             "precio_adjudicado": precio_adj,
             "fecha_publicacion": pub.strftime("%Y-%m-%dT%H:%M:%S"),
             "fecha_cierre": cierre.strftime("%Y-%m-%dT%H:%M:%S"),
+            "llamado": llam_val,
             "items": [{"producto": f"{r['nombre']} - Insumo Generico", "cantidad": random.randint(1, 50)}]
         })
 
