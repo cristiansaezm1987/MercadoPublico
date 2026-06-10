@@ -364,115 +364,107 @@ def api_search_historical(request):
     from django.http import JsonResponse
     
     # Generate 3000 historical records (cached in memory for speed)
-    if not hasattr(api_search_historical, '_cache'):
-        regionMap = {
-            "15": {"name": "Region de Arica y Parinacota", "inst": ["MUNICIPALIDAD DE ARICA", "SERVICIO DE SALUD ARICA"]},
-            "1": {"name": "Region de Tarapaca", "inst": ["MUNICIPALIDAD DE IQUIQUE", "HOSPITAL REGIONAL DE IQUIQUE", "ILUSTRE MUNICIPALIDAD DE HUARA"]},
-            "2": {"name": "Region de Antofagasta", "inst": ["MUNICIPALIDAD DE ANTOFAGASTA", "HOSPITAL REGIONAL DE ANTOFAGASTA"]},
-            "3": {"name": "Region de Atacama", "inst": ["MUNICIPALIDAD DE COPIAPO", "SERVICIO DE SALUD ATACAMA"]},
-            "4": {"name": "Region de Coquimbo", "inst": ["MUNICIPALIDAD DE LA SERENA", "SERVICIO DE SALUD COQUIMBO", "HOSPITAL SAN PABLO DE COQUIMBO"]},
-            "5": {"name": "Region de Valparaiso", "inst": ["I MUNICIPALIDAD DE PUTAENDO", "HOSPITAL DR GUSTAVO FRICKE", "MUNICIPALIDAD DE VALPARAISO"]},
-            "13": {"name": "Region Metropolitana", "inst": ["ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE"]},
-            "6": {"name": "Region de O'Higgins", "inst": ["MUNICIPALIDAD DE RANCAGUA", "HOSPITAL REGIONAL DE RANCAGUA"]},
-            "7": {"name": "Region del Maule", "inst": ["HOSPITAL DE CURICO", "MUNICIPALIDAD DE TALCA", "SERVICIO DE SALUD MAULE", "MUNICIPALIDAD DE LINARES"]},
-            "16": {"name": "Region de Nuble", "inst": ["MUNICIPALIDAD DE CHILLAN", "HOSPITAL HERMINDA MARTIN"]},
-            "8": {"name": "Region del Biobio", "inst": ["MUNICIPALIDAD DE CONCEPCION", "HOSPITAL REGIONAL GUILLERMO GRANT BENAVENTE", "UNIVERSIDAD DEL BIO-BIO"]},
-            "9": {"name": "Region de La Araucania", "inst": ["MUNICIPALIDAD DE TEMUCO", "HOSPITAL HERNAN HENRIQUEZ ARAVENA"]},
-            "14": {"name": "Region de Los Rios", "inst": ["MUNICIPALIDAD DE VALDIVIA", "UNIVERSIDAD AUSTRAL DE CHILE"]},
-            "10": {"name": "Region de Los Lagos", "inst": ["MUNICIPALIDAD DE PUERTO MONTT", "HOSPITAL BASE DE PUERTO MONTT", "MUNICIPALIDAD DE OSORNO"]},
-            "11": {"name": "Region de Aysen", "inst": ["GOBIERNO REGIONAL DE AYSEN", "MUNICIPALIDAD DE COYHAIQUE"]},
-            "12": {"name": "Region de Magallanes", "inst": ["MUNICIPALIDAD DE PUNTA ARENAS", "HOSPITAL CLINICO DE MAGALLANES"]}
-        }
-        statusMap = {
-            "2": "Adjudicada",
-            "3": "Publicada",
-            "4": "Desierta",
-            "5": "Cerrada",
-            "6": "Revocada"
-        }
-        rubros_data = [
-            {"id": "tecnologia", "nombre": "Tecnologia y Software"},
-            {"id": "salud", "nombre": "Salud e Insumos Medicos"},
-            {"id": "oficina", "nombre": "Articulos de Oficina"},
-            {"id": "construccion", "nombre": "Construccion y Ferreteria"},
-            {"id": "vehiculos", "nombre": "Vehiculos y Repuestos"},
-            {"id": "servicios", "nombre": "Servicios Especializados"}
-        ]
-        nacionales = ["CORP NACIONAL FORESTAL", "CARABINEROS DE CHILE", "EJERCITO DE CHILE", "ARMADA DE CHILE", "JUNJI", "DIRECCION GENERAL DE AERONAUTICA"]
-        
-        region_ids = list(regionMap.keys())
-        status_ids = list(statusMap.keys())
-        
-        cache = []
-        now = datetime.datetime(2026, 6, 10)
-        start_date = datetime.datetime(2023, 1, 1)
-        total_days = (now - start_date).days
-        
-        for i in range(10000):
-            r = random.choice(rubros_data)
-            dias_offset = random.randint(0, total_days)
-            cierre = start_date + datetime.timedelta(days=dias_offset)
-            pub = cierre - datetime.timedelta(days=random.randint(1, 5))
-            
-            st_id = random.choice(status_ids)
-            st_name = statusMap[st_id]
-            if cierre < now and random.random() < 0.7:
-                st_id = "2"
-                st_name = "Adjudicada"
-                
-            reg_id = random.choice(region_ids)
-            reg_name = regionMap[reg_id]["name"]
-            comp_list = regionMap[reg_id]["inst"]
-            comp = random.choice(nacionales) if random.random() < 0.2 else random.choice(comp_list)
-                
-            presupuesto = random.randint(50000, 7150000)
-            precio_adj = presupuesto * random.uniform(0.7, 0.98) if st_name == "Adjudicada" else None
-            
-            cache.append({
-                "codigo": f"{random.randint(1000, 9999)}-{random.randint(100, 999)}-COT{str(cierre.year)[-2:]}",
-                "nombre": f"ADQUISICION DE {r['nombre'].upper()} REQ-{i}",
-                "tipo": "compra_agil",
-                "rubro": r["id"],
-                "rubro_nombre": r["nombre"],
-                "comprador": comp,
-                "region_id": reg_id,
-                "region": reg_name,
-                "estado_id": st_id,
-                "estado": st_name,
-                "presupuesto": presupuesto,
-                "precio_adjudicado": precio_adj,
-                "fecha_publicacion": pub.strftime("%Y-%m-%dT%H:%M:%S"),
-                "fecha_cierre": cierre.strftime("%Y-%m-%dT%H:%M:%S"),
-            })
-        api_search_historical._cache = cache
-        
-    records = api_search_historical._cache[:]
-    
-    # 1. Filters
+    # 1. Read Filters first
     date_from_str = request.GET.get('date_from', '')
     date_to_str = request.GET.get('date_to', '')
     region = request.GET.get('region', 'all')
     status = request.GET.get('status', 'all')
     
+    start_date = datetime.datetime.now().date() - datetime.timedelta(days=60)
+    end_date = datetime.datetime.now().date()
+    
     if date_from_str:
         try:
             start_date = datetime.datetime.strptime(date_from_str, "%Y-%m-%d").date()
-            records = [r for r in records if datetime.datetime.strptime(r['fecha_cierre'], "%Y-%m-%dT%H:%M:%S").date() >= start_date]
         except ValueError:
             pass
-            
     if date_to_str:
         try:
             end_date = datetime.datetime.strptime(date_to_str, "%Y-%m-%d").date()
-            records = [r for r in records if datetime.datetime.strptime(r['fecha_cierre'], "%Y-%m-%dT%H:%M:%S").date() <= end_date]
         except ValueError:
             pass
             
-    if region and region != 'all' and region != '':
-        records = [r for r in records if str(r.get('region_id')) == region or r.get('region') == region]
+    if end_date < start_date:
+        end_date = start_date + datetime.timedelta(days=30)
         
-    if status and status != 'all' and status != '':
-        records = [r for r in records if str(r.get('estado_id')) == status or r['estado'].lower() == status.lower()]
+    total_days = max(1, (end_date - start_date).days)
+    
+    regionMap = {
+        "15": {"name": "Region de Arica y Parinacota", "inst": ["MUNICIPALIDAD DE ARICA", "SERVICIO DE SALUD ARICA"]},
+        "1": {"name": "Region de Tarapaca", "inst": ["MUNICIPALIDAD DE IQUIQUE", "HOSPITAL REGIONAL DE IQUIQUE", "ILUSTRE MUNICIPALIDAD DE HUARA"]},
+        "2": {"name": "Region de Antofagasta", "inst": ["MUNICIPALIDAD DE ANTOFAGASTA", "HOSPITAL REGIONAL DE ANTOFAGASTA"]},
+        "3": {"name": "Region de Atacama", "inst": ["MUNICIPALIDAD DE COPIAPO", "SERVICIO DE SALUD ATACAMA"]},
+        "4": {"name": "Region de Coquimbo", "inst": ["MUNICIPALIDAD DE LA SERENA", "SERVICIO DE SALUD COQUIMBO", "HOSPITAL SAN PABLO DE COQUIMBO"]},
+        "5": {"name": "Region de Valparaiso", "inst": ["I MUNICIPALIDAD DE PUTAENDO", "HOSPITAL DR GUSTAVO FRICKE", "MUNICIPALIDAD DE VALPARAISO"]},
+        "13": {"name": "Region Metropolitana", "inst": ["ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE"]},
+        "6": {"name": "Region de O'Higgins", "inst": ["MUNICIPALIDAD DE RANCAGUA", "HOSPITAL REGIONAL DE RANCAGUA"]},
+        "7": {"name": "Region del Maule", "inst": ["HOSPITAL DE CURICO", "MUNICIPALIDAD DE TALCA", "SERVICIO DE SALUD MAULE", "MUNICIPALIDAD DE LINARES"]},
+        "16": {"name": "Region de Nuble", "inst": ["MUNICIPALIDAD DE CHILLAN", "HOSPITAL HERMINDA MARTIN"]},
+        "8": {"name": "Region del Biobio", "inst": ["MUNICIPALIDAD DE CONCEPCION", "HOSPITAL REGIONAL GUILLERMO GRANT BENAVENTE", "UNIVERSIDAD DEL BIO-BIO"]},
+        "9": {"name": "Region de La Araucania", "inst": ["MUNICIPALIDAD DE TEMUCO", "HOSPITAL HERNAN HENRIQUEZ ARAVENA"]},
+        "14": {"name": "Region de Los Rios", "inst": ["MUNICIPALIDAD DE VALDIVIA", "UNIVERSIDAD AUSTRAL DE CHILE"]},
+        "10": {"name": "Region de Los Lagos", "inst": ["MUNICIPALIDAD DE PUERTO MONTT", "HOSPITAL BASE DE PUERTO MONTT", "MUNICIPALIDAD DE OSORNO"]},
+        "11": {"name": "Region de Aysen", "inst": ["GOBIERNO REGIONAL DE AYSEN", "MUNICIPALIDAD DE COYHAIQUE"]},
+        "12": {"name": "Region de Magallanes", "inst": ["MUNICIPALIDAD DE PUNTA ARENAS", "HOSPITAL CLINICO DE MAGALLANES"]}
+    }
+    statusMap = {
+        "2": "Adjudicada",
+        "3": "Publicada",
+        "4": "Desierta",
+        "5": "Cerrada",
+        "6": "Revocada"
+    }
+    rubros_data = [
+        {"id": "tecnologia", "nombre": "Tecnologia y Software"},
+        {"id": "salud", "nombre": "Salud e Insumos Medicos"},
+        {"id": "oficina", "nombre": "Articulos de Oficina"},
+        {"id": "construccion", "nombre": "Construccion y Ferreteria"},
+        {"id": "vehiculos", "nombre": "Vehiculos y Repuestos"},
+        {"id": "servicios", "nombre": "Servicios Especializados"}
+    ]
+    nacionales = ["CORP NACIONAL FORESTAL", "CARABINEROS DE CHILE", "EJERCITO DE CHILE", "ARMADA DE CHILE", "JUNJI", "DIRECCION GENERAL DE AERONAUTICA"]
+    
+    region_ids = list(regionMap.keys())
+    status_ids = list(statusMap.keys())
+    
+    records = []
+    
+    for i in range(150):
+        r = random.choice(rubros_data)
+        dias_offset = random.randint(0, total_days)
+        cierre = start_date + datetime.timedelta(days=dias_offset)
+        pub = cierre - datetime.timedelta(days=random.randint(1, 5))
+        
+        st_id = status if (status and status != 'all' and status != '') else random.choice(status_ids)
+        st_name = statusMap.get(st_id, "Adjudicada")
+            
+        reg_id = region if (region and region != 'all' and region != '') else random.choice(region_ids)
+        if reg_id not in regionMap:
+            reg_id = "13"
+            
+        reg_name = regionMap[reg_id]["name"]
+        comp_list = regionMap[reg_id]["inst"]
+        comp = random.choice(nacionales) if random.random() < 0.2 else random.choice(comp_list)
+            
+        presupuesto = random.randint(50000, 7150000)
+        precio_adj = presupuesto * random.uniform(0.7, 0.98) if st_name == "Adjudicada" else None
+        
+        records.append({
+            "codigo": f"{random.randint(1000, 9999)}-{random.randint(100, 999)}-COT{str(cierre.year)[-2:]}",
+            "nombre": f"ADQUISICION DE {r['nombre'].upper()} REQ-{i}",
+            "tipo": "compra_agil",
+            "rubro": r["id"],
+            "rubro_nombre": r["nombre"],
+            "comprador": comp,
+            "region_id": reg_id,
+            "region": reg_name,
+            "estado_id": st_id,
+            "estado": st_name,
+            "presupuesto": presupuesto,
+            "precio_adjudicado": precio_adj,
+            "fecha_publicacion": pub.strftime("%Y-%m-%dT%H:%M:%S"),
+            "fecha_cierre": cierre.strftime("%Y-%m-%dT%H:%M:%S"),
+        })
 
     # 2. Sorting
     order_by = request.GET.get('order_by', 'recent')

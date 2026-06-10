@@ -838,102 +838,82 @@ document.addEventListener('DOMContentLoaded', () => {
             renderActiveCots(data.data, data.meta);
         } catch (e) {
             console.warn("Usando motor sintético local (GitHub Pages mode)");
-            if (!window.HISTORICAL_CACHE) {
-                window.HISTORICAL_CACHE = [];
-                const regionMap = {
-                    "15": {name: "Region de Arica y Parinacota", inst: ["MUNICIPALIDAD DE ARICA", "SERVICIO DE SALUD ARICA"]},
-                    "1": {name: "Region de Tarapaca", inst: ["MUNICIPALIDAD DE IQUIQUE", "HOSPITAL REGIONAL DE IQUIQUE", "ILUSTRE MUNICIPALIDAD DE HUARA"]},
-                    "2": {name: "Region de Antofagasta", inst: ["MUNICIPALIDAD DE ANTOFAGASTA", "HOSPITAL REGIONAL DE ANTOFAGASTA"]},
-                    "3": {name: "Region de Atacama", inst: ["MUNICIPALIDAD DE COPIAPO", "SERVICIO DE SALUD ATACAMA"]},
-                    "4": {name: "Region de Coquimbo", inst: ["MUNICIPALIDAD DE LA SERENA", "SERVICIO DE SALUD COQUIMBO", "HOSPITAL SAN PABLO DE COQUIMBO"]},
-                    "5": {name: "Region de Valparaiso", inst: ["I MUNICIPALIDAD DE PUTAENDO", "HOSPITAL DR GUSTAVO FRICKE", "MUNICIPALIDAD DE VALPARAISO"]},
-                    "13": {name: "Region Metropolitana", inst: ["ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE"]},
-                    "6": {name: "Region de O'Higgins", inst: ["MUNICIPALIDAD DE RANCAGUA", "HOSPITAL REGIONAL DE RANCAGUA"]},
-                    "7": {name: "Region del Maule", inst: ["HOSPITAL DE CURICO", "MUNICIPALIDAD DE TALCA", "SERVICIO DE SALUD MAULE", "MUNICIPALIDAD DE LINARES"]},
-                    "16": {name: "Region de Nuble", inst: ["MUNICIPALIDAD DE CHILLAN", "HOSPITAL HERMINDA MARTIN"]},
-                    "8": {name: "Region del Biobio", inst: ["MUNICIPALIDAD DE CONCEPCION", "HOSPITAL REGIONAL GUILLERMO GRANT BENAVENTE", "UNIVERSIDAD DEL BIO-BIO"]},
-                    "9": {name: "Region de La Araucania", inst: ["MUNICIPALIDAD DE TEMUCO", "HOSPITAL HERNAN HENRIQUEZ ARAVENA"]},
-                    "14": {name: "Region de Los Rios", inst: ["MUNICIPALIDAD DE VALDIVIA", "UNIVERSIDAD AUSTRAL DE CHILE"]},
-                    "10": {name: "Region de Los Lagos", inst: ["MUNICIPALIDAD DE PUERTO MONTT", "HOSPITAL BASE DE PUERTO MONTT", "MUNICIPALIDAD DE OSORNO"]},
-                    "11": {name: "Region de Aysen", inst: ["GOBIERNO REGIONAL DE AYSEN", "MUNICIPALIDAD DE COYHAIQUE"]},
-                    "12": {name: "Region de Magallanes", inst: ["MUNICIPALIDAD DE PUNTA ARENAS", "HOSPITAL CLINICO DE MAGALLANES"]}
-                };
-                const statusMap = {
-                    "2": "Adjudicada",
-                    "3": "Publicada",
-                    "4": "Desierta",
-                    "5": "Cerrada",
-                    "6": "Revocada"
-                };
+            window.HISTORICAL_CACHE = [];
+            const regionMap = {
+                "15": {name: "Region de Arica y Parinacota", inst: ["MUNICIPALIDAD DE ARICA", "SERVICIO DE SALUD ARICA"]},
+                "1": {name: "Region de Tarapaca", inst: ["MUNICIPALIDAD DE IQUIQUE", "HOSPITAL REGIONAL DE IQUIQUE", "ILUSTRE MUNICIPALIDAD DE HUARA"]},
+                "2": {name: "Region de Antofagasta", inst: ["MUNICIPALIDAD DE ANTOFAGASTA", "HOSPITAL REGIONAL DE ANTOFAGASTA"]},
+                "3": {name: "Region de Atacama", inst: ["MUNICIPALIDAD DE COPIAPO", "SERVICIO DE SALUD ATACAMA"]},
+                "4": {name: "Region de Coquimbo", inst: ["MUNICIPALIDAD DE LA SERENA", "SERVICIO DE SALUD COQUIMBO", "HOSPITAL SAN PABLO DE COQUIMBO"]},
+                "5": {name: "Region de Valparaiso", inst: ["I MUNICIPALIDAD DE PUTAENDO", "HOSPITAL DR GUSTAVO FRICKE", "MUNICIPALIDAD DE VALPARAISO"]},
+                "13": {name: "Region Metropolitana", inst: ["ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE"]},
+                "6": {name: "Region de O'Higgins", inst: ["MUNICIPALIDAD DE RANCAGUA", "HOSPITAL REGIONAL DE RANCAGUA"]},
+                "7": {name: "Region del Maule", inst: ["HOSPITAL DE CURICO", "MUNICIPALIDAD DE TALCA", "SERVICIO DE SALUD MAULE", "MUNICIPALIDAD DE LINARES"]},
+                "16": {name: "Region de Nuble", inst: ["MUNICIPALIDAD DE CHILLAN", "HOSPITAL HERMINDA MARTIN"]},
+                "8": {name: "Region del Biobio", inst: ["MUNICIPALIDAD DE CONCEPCION", "HOSPITAL REGIONAL GUILLERMO GRANT BENAVENTE", "UNIVERSIDAD DEL BIO-BIO"]},
+                "9": {name: "Region de La Araucania", inst: ["MUNICIPALIDAD DE TEMUCO", "HOSPITAL HERNAN HENRIQUEZ ARAVENA"]},
+                "14": {name: "Region de Los Rios", inst: ["MUNICIPALIDAD DE VALDIVIA", "UNIVERSIDAD AUSTRAL DE CHILE"]},
+                "10": {name: "Region de Los Lagos", inst: ["MUNICIPALIDAD DE PUERTO MONTT", "HOSPITAL BASE DE PUERTO MONTT", "MUNICIPALIDAD DE OSORNO"]},
+                "11": {name: "Region de Aysen", inst: ["GOBIERNO REGIONAL DE AYSEN", "MUNICIPALIDAD DE COYHAIQUE"]},
+                "12": {name: "Region de Magallanes", inst: ["MUNICIPALIDAD DE PUNTA ARENAS", "HOSPITAL CLINICO DE MAGALLANES"]}
+            };
+            const statusMap = {
+                "2": "Adjudicada",
+                "3": "Publicada",
+                "4": "Desierta",
+                "5": "Cerrada",
+                "6": "Revocada"
+            };
+            
+            const rubros = [{id:"tecnologia", nombre:"Tecnologia y Software"}, {id:"salud", nombre:"Salud e Insumos Medicos"}, {id:"oficina", nombre:"Articulos de Oficina"}, {id:"construccion", nombre:"Construccion y Ferreteria"}, {id:"vehiculos", nombre:"Vehiculos y Repuestos"}, {id:"servicios", nombre:"Servicios Especializados"}];
+            const regionIds = Object.keys(regionMap);
+            const statusIds = Object.keys(statusMap);
+            const nacionales = ["CORP NACIONAL FORESTAL", "CARABINEROS DE CHILE", "EJERCITO DE CHILE", "ARMADA DE CHILE", "JUNJI", "DIRECCION GENERAL DE AERONAUTICA"];
+            
+            let startD = df ? new Date(df) : new Date(2026, 4, 1);
+            let endD = dt ? new Date(dt) : new Date();
+            endD.setHours(23, 59, 59);
+            if (endD < startD) endD = new Date(startD.getTime() + 86400000 * 30);
+            
+            let totalDays = Math.max(1, Math.floor((endD - startD) / (1000 * 60 * 60 * 24)));
+            
+            for(let i=0; i<150; i++) {
+                let r = rubros[Math.floor(Math.random() * rubros.length)];
+                let rndDays = Math.floor(Math.random() * totalDays);
+                let closeD = new Date(startD.getTime() + rndDays * 24 * 60 * 60 * 1000);
+                let pubD = new Date(closeD.getTime() - (Math.floor(Math.random() * 5) + 1) * 24 * 60 * 60 * 1000);
+                let pres = Math.floor(Math.random() * 7100000) + 50000;
                 
-                const rubros = [{id:"tecnologia", nombre:"Tecnologia y Software"}, {id:"salud", nombre:"Salud e Insumos Medicos"}, {id:"oficina", nombre:"Articulos de Oficina"}, {id:"construccion", nombre:"Construccion y Ferreteria"}, {id:"vehiculos", nombre:"Vehiculos y Repuestos"}, {id:"servicios", nombre:"Servicios Especializados"}];
-                const regionIds = Object.keys(regionMap);
-                const statusIds = Object.keys(statusMap);
-                const nacionales = ["CORP NACIONAL FORESTAL", "CARABINEROS DE CHILE", "EJERCITO DE CHILE", "ARMADA DE CHILE", "JUNJI", "DIRECCION GENERAL DE AERONAUTICA"];
+                let regId = (region && region !== 'all' && region !== '') ? region : regionIds[Math.floor(Math.random() * regionIds.length)];
+                // safety fallback if ID not found
+                if (!regionMap[regId]) regId = "13"; 
+                let regName = regionMap[regId].name;
+                let compList = regionMap[regId].inst;
+                let comp = (Math.random() < 0.2) ? nacionales[Math.floor(Math.random() * nacionales.length)] : compList[Math.floor(Math.random() * compList.length)];
                 
-                let startD = new Date(2023, 0, 1);
-                let endD = new Date(2026, 5, 10);
-                let totalDays = Math.floor((endD - startD) / (1000 * 60 * 60 * 24));
+                let stId = (status && status !== 'all') ? status : statusIds[Math.floor(Math.random() * statusIds.length)];
+                if (!statusMap[stId]) stId = "2";
+                let stName = statusMap[stId];
                 
-                for(let i=0; i<10000; i++) {
-                    let r = rubros[Math.floor(Math.random() * rubros.length)];
-                    let rndDays = Math.floor(Math.random() * totalDays);
-                    let closeD = new Date(startD.getTime() + rndDays * 24 * 60 * 60 * 1000);
-                    let pubD = new Date(closeD.getTime() - (Math.floor(Math.random() * 5) + 1) * 24 * 60 * 60 * 1000);
-                    let pres = Math.floor(Math.random() * 7100000) + 50000;
-                    
-                    let regId = regionIds[Math.floor(Math.random() * regionIds.length)];
-                    let regName = regionMap[regId].name;
-                    let compList = regionMap[regId].inst;
-                    let comp = (Math.random() < 0.2) ? nacionales[Math.floor(Math.random() * nacionales.length)] : compList[Math.floor(Math.random() * compList.length)];
-                    
-                    let stId = statusIds[Math.floor(Math.random() * statusIds.length)];
-                    let stName = statusMap[stId];
-                    if (closeD < new Date() && Math.random() < 0.7) {
-                        stId = "2";
-                        stName = "Adjudicada";
-                    }
-
-                    window.HISTORICAL_CACHE.push({
-                        codigo: `${Math.floor(Math.random()*8999)+1000}-${Math.floor(Math.random()*899)+100}-COT${closeD.getFullYear().toString().substr(-2)}`,
-                        nombre: `ADQUISICION DE ${r.nombre.toUpperCase()} REQ-${i}`,
-                        tipo: "compra_agil",
-                        rubro: r.id,
-                        rubro_nombre: r.nombre,
-                        comprador: comp,
-                        region_id: regId,
-                        region: regName,
-                        estado_id: stId,
-                        estado: stName,
-                        presupuesto: pres,
-                        precio_adjudicado: stName === "Adjudicada" ? pres * (0.7 + Math.random()*0.28) : null,
-                        fecha_publicacion: pubD.toISOString(),
-                        fecha_cierre: closeD.toISOString()
-                    });
-                }
+                window.HISTORICAL_CACHE.push({
+                    codigo: `${Math.floor(Math.random()*8999)+1000}-${Math.floor(Math.random()*899)+100}-COT${closeD.getFullYear().toString().substr(-2)}`,
+                    nombre: `ADQUISICION DE ${r.nombre.toUpperCase()} REQ-${i}`,
+                    tipo: "compra_agil",
+                    rubro: r.id,
+                    rubro_nombre: r.nombre,
+                    comprador: comp,
+                    region_id: regId,
+                    region: regName,
+                    estado_id: stId,
+                    estado: stName,
+                    presupuesto: pres,
+                    precio_adjudicado: stName === "Adjudicada" ? pres * (0.7 + Math.random()*0.28) : null,
+                    fecha_publicacion: pubD.toISOString(),
+                    fecha_cierre: closeD.toISOString()
+                });
             }
             
             let filtered = window.HISTORICAL_CACHE;
-            
-            const rubro = document.getElementById('rec-rubro')?.value || '';
-            if (df) {
-                let start = new Date(df);
-                filtered = filtered.filter(x => new Date(x.fecha_cierre) >= start);
-            }
-            if (dt) {
-                let end = new Date(dt);
-                end.setHours(23,59,59);
-                filtered = filtered.filter(x => new Date(x.fecha_cierre) <= end);
-            }
-            if (region && region !== 'all' && region !== '') {
-                filtered = filtered.filter(x => x.region_id === region || x.region === region);
-            }
-            if (status && status !== 'all') {
-                filtered = filtered.filter(x => x.estado_id === status || x.estado.toLowerCase() === status.toLowerCase());
-            }
-            if (rubro && rubro !== '') {
-                filtered = filtered.filter(x => x.rubro === rubro);
-            }
             
             if (order_by === 'recent') filtered.sort((a,b) => new Date(b.fecha_cierre) - new Date(a.fecha_cierre));
             if (order_by === 'oldest') filtered.sort((a,b) => new Date(a.fecha_cierre) - new Date(b.fecha_cierre));
