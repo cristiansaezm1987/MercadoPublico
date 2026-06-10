@@ -232,14 +232,21 @@ def api_search_historical(request):
                 "items": infer_items_from_title(f["name"], f["amount"])
             })
             
-        page_number = int(request.GET.get('page_number', 1))
-        items_per_page = 20
-        total_items = len(records)
-        total_pages = max(1, (total_items + items_per_page - 1) // items_per_page)
+        page_param = request.GET.get('page_number', '1')
         
-        page_number = max(1, min(page_number, total_pages))
-        start_idx = (page_number - 1) * items_per_page
-        end_idx = start_idx + items_per_page
+        if page_param == 'all':
+            start_idx = 0
+            end_idx = total_items
+            page_number = 1
+            items_per_page = total_items
+            total_pages = 1
+        else:
+            page_number = int(page_param)
+            items_per_page = 20
+            total_pages = max(1, (total_items + items_per_page - 1) // items_per_page)
+            page_number = max(1, min(page_number, total_pages))
+            start_idx = (page_number - 1) * items_per_page
+            end_idx = start_idx + items_per_page
         
         meta_data = {
             "total_items": total_items,

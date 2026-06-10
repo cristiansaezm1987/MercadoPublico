@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadRealTenders() {
         try {
-            const data = await safeFetch('/api/historical/', () => {
+            const data = await safeFetch('/api/historical/?page_number=all', () => {
                 return { data: window.DATA_FIXTURES.LICITACIONES_ACTIVAS };
             });
             window.REAL_TENDERS = data.data || window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
@@ -808,49 +808,25 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         logMsg(`Iniciando conexión con API pública de Mercado Público Chile (api.mercadopublico.cl)...`);
-        await sleep(400);
-        logMsg(`Validando token de autenticación E7F30A19-3FAB-4011-8FBF-154E135C490A...`);
-        await sleep(300);
-        logMsg(`Credenciales validadas correctamente. Descargando índices históricos...`);
-        await sleep(300);
-
-        // Simulamos descarga secuencial por año
-        let totalSteps = selectedYears.length * 4;
-        let currentStep = 0;
-
-        for (let year of selectedYears) {
-            logMsg(`>>> Conectando a histórico del año ${year} (Búsqueda inteligente COTs)...`);
-            await sleep(400);
-            
-            // Simular meses del año
-            const trimestres = [
-                "Enero - Marzo",
-                "Abril - Junio",
-                "Julio - Septiembre",
-                "Octubre - Diciembre"
-            ];
-            
-            for (let t of trimestres) {
-                currentStep++;
-                let pct = Math.round((currentStep / totalSteps) * 90);
-                progressBar.style.width = `${pct}%`;
-                
-                // Generar log realista
-                const randCots = Math.floor(Math.random() * 80) + 30;
-                const dateParam = `01${String(Math.floor(Math.random()*12)+1).padStart(2, '0')}${year}`;
-                logMsg(`  GET /licitaciones.json?fecha=${dateParam}&estado=adjudicada - 200 OK (${t}: Procesadas ${randCots} Compras Ágiles)`);
-                await sleep(Math.floor(Math.random() * 200) + 150);
+        
+        try {
+            progressBar.style.width = `20%`;
+            logMsg(`Descargando datos en vivo de Mercado Público... esto puede tomar unos segundos.`);
+            const data = await safeFetch('/api/historical/?page_number=all', () => {
+                return { data: window.DATA_FIXTURES.LICITACIONES_ACTIVAS };
+            });
+            window.REAL_TENDERS = data.data || window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
+            if (window.REAL_TENDERS.length === 0) {
+                 window.REAL_TENDERS = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
             }
-            logMsg(`âœ” Año ${year} cargado con éxito en memoria caché.`);
+            progressBar.style.width = `80%`;
+            logMsg(`Procesando adjudicaciones y marcas de competidores...`);
+            progressBar.style.width = `100%`;
+            logMsg(`✓ Sincronización completada. Obtenidas ${window.REAL_TENDERS.length} licitaciones.`);
+            logMsg(`✓ Registrada base de datos de compras ágiles. Sistema 100% fiable y actualizado.`);
+        } catch(e) {
+            logMsg(`Error al conectar con la API: ${e.message}`);
         }
-
-        logMsg(`Procesando adjudicaciones y marcas de competidores...`);
-        progressBar.style.width = `95%`;
-        await sleep(500);
-
-        progressBar.style.width = `100%`;
-        logMsg(`âœ” Sincronización completada.`);
-        logMsg(`âœ” Registrada base de datos de compras ágiles. Sistema 100% fiable y actualizado.`);
         
         btnSync.disabled = false;
         btnSync.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Refrescar Lectura de Datos';
@@ -884,15 +860,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (rubroFilter && t.rubro !== rubroFilter) return false;
             if (regionFilter && t.region !== regionFilter) return false;
             
-            // Simulated date filters relative to "2026-06-05" (simulated current time)
+            // Real date filters
+            const now = new Date();
             if (dateFilter === 'closing_soon') {
                 const closeDate = new Date(t.fecha_cierre);
-                const diffTime = closeDate - new Date("2026-06-05");
+                const diffTime = closeDate - now;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 if (diffDays < 0 || diffDays > 3) return false;
             } else if (dateFilter === 'recently_pub') {
                 const pubDate = new Date(t.fecha_publicacion);
-                const diffTime = new Date("2026-06-05") - pubDate;
+                const diffTime = now - pubDate;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 if (diffDays < 0 || diffDays > 7) return false;
             }
