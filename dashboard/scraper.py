@@ -122,13 +122,37 @@ def scrape_mercadopublico_excel(params: dict) -> list:
             elif estado_original == "Revocada":
                 status = "revoked"
                 
+            def infer_region(organismo, unidad):
+                text = (str(organismo) + " " + str(unidad)).upper()
+                import unicodedata
+                text = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII')
+                if 'TARAPACA' in text or 'IQUIQUE' in text: return 'Región de Tarapacá'
+                if 'ANTOFAGASTA' in text or 'CALAMA' in text: return 'Región de Antofagasta'
+                if 'ATACAMA' in text or 'COPIAPO' in text: return 'Región de Atacama'
+                if 'COQUIMBO' in text or 'SERENA' in text: return 'Región de Coquimbo'
+                if 'VALPARAISO' in text or 'VINA' in text or 'FRICKE' in text or 'QUILLOTA' in text: return 'Región de Valparaíso'
+                if 'HIGGINS' in text or 'RANCAGUA' in text: return 'Región del Libertador General Bernardo O\'Higgins'
+                if 'MAULE' in text or 'TALCA' in text or 'CURICO' in text or 'LINARES' in text: return 'Región del Maule'
+                if 'BIOBIO' in text or 'BIO BIO' in text or 'CONCEPCION' in text or 'TALCAHUANO' in text or 'VICTOR RIOS' in text: return 'Región del Biobío'
+                if 'ARAUCANIA' in text or 'TEMUCO' in text or 'FRONTERA' in text or 'ARAVENA' in text: return 'Región de La Araucanía'
+                if 'LOS LAGOS' in text or 'MONTT' in text or 'OSORNO' in text or 'RELONCAVI' in text: return 'Región de Los Lagos'
+                if 'AYSEN' in text or 'COYHAIQUE' in text: return 'Región Aysén del General Carlos Ibáñez del Campo'
+                if 'MAGALLANES' in text or 'PUNTA ARENAS' in text: return 'Región de Magallanes y de la Antártica Chilena'
+                if 'LOS RIOS' in text or 'VALDIVIA' in text: return 'Región de Los Ríos'
+                if 'ARICA' in text or 'PARINACOTA' in text: return 'Región de Arica y Parinacota'
+                if 'NUBLE' in text or 'CHILLAN' in text: return 'Región de Ñuble'
+                return 'Región Metropolitana'
+                
+            org_name = get_val("Organismo")
+            unit_name = get_val("Unidad")
+            
             item = {
                 "id": get_val("ID"),
                 "name": get_val("Nombre"),
                 "buyer": {
-                    "name": get_val("Organismo"),
-                    "unit": get_val("Unidad"),
-                    "region": "Región Metropolitana" # Excel doesn't have region! We can deduce or fake it or leave it blank
+                    "name": org_name,
+                    "unit": unit_name,
+                    "region": infer_region(org_name, unit_name)
                 },
                 "status": status,
                 "amount": float(get_val("Monto Disponible", 0)),
