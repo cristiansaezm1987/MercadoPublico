@@ -436,6 +436,9 @@ def api_search_historical(request):
         pub = cierre - datetime.timedelta(days=random.randint(1, 5))
         
         st_id = status if (status and status != 'all' and status != '') else random.choice(status_ids)
+        if st_id not in statusMap:
+            found = next((k for k, v in statusMap.items() if v.lower() == st_id.lower()), None)
+            st_id = found if found else "2"
         st_name = statusMap.get(st_id, "Adjudicada")
             
         reg_id = region if (region and region != 'all' and region != '') else random.choice(region_ids)

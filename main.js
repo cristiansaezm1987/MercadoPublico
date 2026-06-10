@@ -892,7 +892,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 let comp = (Math.random() < 0.2) ? nacionales[Math.floor(Math.random() * nacionales.length)] : compList[Math.floor(Math.random() * compList.length)];
                 
                 let stId = (status && status !== 'all') ? status : statusIds[Math.floor(Math.random() * statusIds.length)];
-                if (!statusMap[stId]) stId = "2";
+                if (!statusMap[stId]) {
+                    let foundKey = Object.keys(statusMap).find(k => statusMap[k].toLowerCase() === stId.toLowerCase());
+                    if (foundKey) stId = foundKey;
+                    else stId = "2";
+                }
                 let stName = statusMap[stId];
                 
                 window.HISTORICAL_CACHE.push({
