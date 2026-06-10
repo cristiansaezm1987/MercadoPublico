@@ -208,7 +208,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---- DUAL-MODE API CLIENT WRAPPER ----
     async function safeFetch(url, localFallbackFunc) {
         try {
-            const res = await fetch(url);
+            let finalUrl = url;
+            if (url.startsWith('/api/') && window.location.hostname !== '127.0.0.1' && window.location.hostname !== 'localhost') {
+                 // GitHub pages deployment, fallback to local python server
+                 finalUrl = 'http://127.0.0.1:8000' + url;
+            } else if (url.startsWith('/api/')) {
+                 finalUrl = 'http://127.0.0.1:8000' + url;
+            }
+            const res = await fetch(finalUrl);
             if (res.ok) {
                 return await res.json();
             }
@@ -317,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function recommend_tenders(budget, rubro_id, region) {
-        const activeTenders = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
+        const activeTenders = window.REAL_TENDERS;
         const rubros = window.DATA_FIXTURES.RUBROS;
         const compradores = window.DATA_FIXTURES.COMPRADORES;
 
@@ -412,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fetch_tender_detail(codigo) {
-        const activeTenders = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
+        const activeTenders = window.REAL_TENDERS;
         const recentTenders = window.DATA_FIXTURES.HISTORIAL_LICITACIONES;
 
         let t = activeTenders.find(x => x.codigo === codigo);
@@ -854,7 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortBy = document.getElementById('cot-sort-by')?.value || 'cierre_asc';
         const dateFilter = document.getElementById('cot-date-filter')?.value || 'all';
 
-        let activeCOTs = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.filter(t => {
+        let activeCOTs = window.REAL_TENDERS.filter(t => {
             const isCOT = t.codigo.toUpperCase().includes('COT') || t.tipo === 'compra_agil';
             if (!isCOT) return false;
             if (rubroFilter && t.rubro !== rubroFilter) return false;
@@ -953,7 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.activeCotCode = codigo;
 
         // Buscar COT
-        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === codigo);
+        const cot = window.REAL_TENDERS.find(x => x.codigo === codigo);
         if (!cot) return;
 
         cot.scoreIA = cot.scoreIA || calculate_cot_score(cot);
@@ -1373,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const matchData = customMatchData || window.lastMatchData;
         if (!matchData) return;
         
-        const cot = customCot || window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === (customCot ? customCot.codigo : window.activeCotCode));
+        const cot = customCot || window.REAL_TENDERS.find(x => x.codigo === (customCot ? customCot.codigo : window.activeCotCode));
         if (!cot) return;
         if (!cot) return;
 
@@ -1526,7 +1533,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quote-search-modal').style.display = 'none';
         
         const item = window.lastMatchData.items[itemIndex];
-        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
+        const cot = window.REAL_TENDERS.find(x => x.codigo === window.activeCotCode);
         const rubros = window.DATA_FIXTURES.RUBROS;
         const rubro = rubros.find(r => r.id === cot.rubro) || rubros[0];
         const markup = 1.0 + rubro.margen_promedio;
@@ -1847,7 +1854,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.saveBid = function() {
         if (!window.lastMatchData || !window.activeCotCode) return;
-        const cot = window.DATA_FIXTURES.LICITACIONES_ACTIVAS.find(x => x.codigo === window.activeCotCode);
+        const cot = window.REAL_TENDERS.find(x => x.codigo === window.activeCotCode);
         if (!cot) return;
 
         let bids = [];
