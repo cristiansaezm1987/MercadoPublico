@@ -467,14 +467,15 @@ def api_search_historical(request):
             "precio_adjudicado": precio_adj,
             "fecha_publicacion": pub.strftime("%Y-%m-%dT%H:%M:%S"),
             "fecha_cierre": cierre.strftime("%Y-%m-%dT%H:%M:%S"),
+            "items": [{"producto": f"{r['nombre']} - Insumo Generico", "cantidad": random.randint(1, 50)}]
         })
 
     # 2. Sorting
     order_by = request.GET.get('order_by', 'recent')
     if order_by == 'recent':
-        records.sort(key=lambda x: x['fecha_cierre'], reverse=True)
+        records.sort(key=lambda x: x['fecha_publicacion'], reverse=True)
     elif order_by == 'oldest':
-        records.sort(key=lambda x: x['fecha_cierre'])
+        records.sort(key=lambda x: x['fecha_publicacion'])
     elif order_by == 'budget_desc':
         records.sort(key=lambda x: x['presupuesto'], reverse=True)
     elif order_by == 'budget_asc':

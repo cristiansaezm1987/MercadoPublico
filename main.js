@@ -913,14 +913,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     presupuesto: pres,
                     precio_adjudicado: stName === "Adjudicada" ? pres * (0.7 + Math.random()*0.28) : null,
                     fecha_publicacion: pubD.toISOString(),
-                    fecha_cierre: closeD.toISOString()
+                    fecha_cierre: closeD.toISOString(),
+                    items: [{producto: r.nombre + " - Insumo Generico", cantidad: Math.floor(Math.random()*50)+1}]
                 });
             }
             
             let filtered = window.HISTORICAL_CACHE;
             
-            if (order_by === 'recent') filtered.sort((a,b) => new Date(b.fecha_cierre) - new Date(a.fecha_cierre));
-            if (order_by === 'oldest') filtered.sort((a,b) => new Date(a.fecha_cierre) - new Date(b.fecha_cierre));
+            if (order_by === 'recent') filtered.sort((a,b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion));
+            if (order_by === 'oldest') filtered.sort((a,b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion));
             if (order_by === 'budget_desc') filtered.sort((a,b) => b.presupuesto - a.presupuesto);
             if (order_by === 'budget_asc') filtered.sort((a,b) => a.presupuesto - b.presupuesto);
             
