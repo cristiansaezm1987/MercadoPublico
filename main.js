@@ -880,8 +880,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     let rndDays = Math.floor(Math.random() * totalDays);
                     let closeD = new Date(startD.getTime() + rndDays * 24 * 60 * 60 * 1000);
                     let pubD = new Date(closeD.getTime() - (Math.floor(Math.random() * 5) + 1) * 24 * 60 * 60 * 1000);
-                    let st = estados[Math.floor(Math.random() * estados.length)];
-                    if (closeD < new Date() && Math.random() < 0.7) st = "Adjudicada";
                     let pres = Math.floor(Math.random() * 7100000) + 50000;
                     
                     let regId = regionIds[Math.floor(Math.random() * regionIds.length)];
