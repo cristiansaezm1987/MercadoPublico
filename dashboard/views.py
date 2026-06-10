@@ -260,3 +260,33 @@ def api_search_historical(request):
         
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+def api_cot_detail(request):
+    import os
+    import subprocess
+    import json
+    from django.http import JsonResponse
+    cot_id = request.GET.get('id', '')
+    if not cot_id:
+        return JsonResponse({"success": False, "error": "ID is required"})
+        
+    try:
+        scraper_script = os.path.join(os.path.dirname(__file__), 'scraper_detail.py')
+        venv_python = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.venv', 'Scripts', 'python.exe')
+        if not os.path.exists(venv_python):
+            venv_python = "python"
+            
+        result = subprocess.run([venv_python, scraper_script, cot_id], capture_output=True, text=True, timeout=40)
+        
+        # Scraper prints json to stdout
+        output = result.stdout.strip()
+        # Find json block in case there are debug prints
+        json_start = output.find('{')
+        if json_start >= 0:
+            output = output[json_start:]
+            data = json.loads(output)
+            return JsonResponse(data)
+        else:
+            return JsonResponse({"success": False, "error": "Invalid output from scraper", "raw": output})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})

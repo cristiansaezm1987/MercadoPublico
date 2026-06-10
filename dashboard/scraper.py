@@ -14,6 +14,9 @@ def scrape_mercadopublico_excel(params: dict) -> list:
     """
     print("Initializing UC Scraper...")
     options = uc.ChromeOptions()
+    # options.add_argument('--headless=new')  # Headless blocked by Cloudflare
+    options.add_argument('--window-size=1280,720')
+    options.add_argument('--window-position=-32000,-32000') # Hide off screen
     
     download_dir = os.path.join(os.getcwd(), 'downloads')
     if not os.path.exists(download_dir):

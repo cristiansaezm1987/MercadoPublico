@@ -1796,11 +1796,42 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSensitivityChart(optimalSimData);
             renderCotHistoryChart(similarHistory.slice(0, 6));
 
-            // Launch MeliPulse async: load real prices in the costs tab
-            const costsContainer = document.getElementById('melipulse-costs-container');
-            if (costsContainer) {
-                loadAndRenderCostsTab(cot, costsContainer);
+            async function loadRealCotDetails(cot_obj) {
+                const meliContainer = document.getElementById('melipulse-costs-container');
+                if (!meliContainer) return;
+                
+                meliContainer.innerHTML = `
+                    <div style="padding: 3rem 1rem; text-align: center; color: var(--text-muted);">
+                        <div class="pulse" style="width: 16px; height: 16px; background: var(--secondary); border-radius: 50%; margin: 0 auto 1rem;"></div>
+                        <h4 style="color: var(--text-light); margin-bottom: 0.5rem; font-size: 1rem;">Extrayendo Insumos Reales de Mercado Público...</h4>
+                        <p style="font-size: 0.85rem; max-width: 400px; margin: 0 auto;">El Robot IA está abriendo el portal oficial para extraer los productos exactos que solicita la institución (esto suele tomar entre 10 y 20 segundos).</p>
+                    </div>
+                `;
+                
+                try {
+                    const res = await fetch('/api/cot_detail/?id=' + cot_obj.id);
+                    const data = await res.json();
+                    
+                    if (data.success && data.products && data.products.length > 0) {
+                        // Reemplazar items inferidos por LOS REALES
+                        cot_obj.items = data.products.map(p => ({
+                            name: p.producto + (p.codigo ? ` (Cód: ${p.codigo})` : ''),
+                            quantity: parseInt(p.cantidad) || 1,
+                            unit: "unidades",
+                            cost: 0 // Will be simulated
+                        }));
+                    } else {
+                        console.log("No se pudieron extraer productos, usando inferidos.", data);
+                    }
+                } catch (e) {
+                    console.error("Error al obtener detalle real", e);
+                }
+                
+                // Renderizar la tabla final con MeliPulse (con items reales si se pudieron bajar)
+                loadAndRenderCostsTab(cot_obj, meliContainer);
             }
+
+            loadRealCotDetails(cot);
         }, 150);
     }
 
