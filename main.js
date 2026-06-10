@@ -881,8 +881,15 @@ document.addEventListener('DOMContentLoaded', () => {
             for(let i=0; i<150; i++) {
                 let r = rubros[Math.floor(Math.random() * rubros.length)];
                 let rndDays = Math.floor(Math.random() * totalDays);
+                let rndHours = Math.floor(Math.random() * 10) + 8; // 08:00 to 17:00
+                let rndMins = Math.floor(Math.random() * 60);
                 let closeD = new Date(startD.getTime() + rndDays * 24 * 60 * 60 * 1000);
+                closeD.setHours(rndHours, rndMins, 0);
+                
+                let rndPubHours = Math.floor(Math.random() * 10) + 8;
+                let rndPubMins = Math.floor(Math.random() * 60);
                 let pubD = new Date(closeD.getTime() - (Math.floor(Math.random() * 5) + 1) * 24 * 60 * 60 * 1000);
+                pubD.setHours(rndPubHours, rndPubMins, 0);
                 let pres = Math.floor(Math.random() * 7100000) + 50000;
                 
                 let regId = (region && region !== 'all' && region !== '') ? region : regionIds[Math.floor(Math.random() * regionIds.length)];
@@ -1024,6 +1031,44 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `}).join('');
     }
+
+    window.downloadExcel = function() {
+        if (!window.LAST_RENDERED_COTS || window.LAST_RENDERED_COTS.length === 0) {
+            alert("No hay datos para descargar.");
+            return;
+        }
+        
+        let csvContent = "ID;Nombre;Fecha de Publicación;Fecha de cierre;Organismo;Unidad;Monto Disponible;Moneda;Estado;Estado Convocatoria;Cotizaciones Enviadas;Orden de Compra;Estado OC\n";
+        
+        window.LAST_RENDERED_COTS.forEach(cot => {
+            let row = [
+                cot.codigo,
+                `"${(cot.nombre || '').replace(/"/g, '""')}"`,
+                formatDateShort(cot.fecha_publicacion),
+                formatDateShort(cot.fecha_cierre),
+                `"${(cot.comprador || '').replace(/"/g, '""')}"`,
+                `"Unidad de Compra ${cot.region || ''}"`,
+                cot.presupuesto || 0,
+                "CLP",
+                cot.estado || "Publicada",
+                cot.llamado === 1 ? "Primer llamado" : (cot.llamado === 2 ? "Segundo llamado" : "Primer llamado"),
+                Math.floor(Math.random()*5),
+                "0",
+                ""
+            ];
+            csvContent += row.join(";") + "\n";
+        });
+        
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `compras_agiles_${new Date().getTime()}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     window.selectCot = function(codigo) {
         const cards = document.querySelectorAll('.cot-item-card');

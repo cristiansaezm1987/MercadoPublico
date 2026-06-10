@@ -433,8 +433,8 @@ def api_search_historical(request):
     for i in range(150):
         r = random.choice(rubros_data)
         dias_offset = random.randint(0, total_days)
-        cierre = start_date + datetime.timedelta(days=dias_offset)
-        pub = cierre - datetime.timedelta(days=random.randint(1, 5))
+        cierre = datetime.datetime.combine(start_date + datetime.timedelta(days=dias_offset), datetime.time(random.randint(8, 17), random.randint(0, 59)))
+        pub = cierre - datetime.timedelta(days=random.randint(1, 5), hours=random.randint(1, 24), minutes=random.randint(0, 59))
         
         st_id = status if (status and status != 'all' and status != '') else random.choice(status_ids)
         if st_id not in statusMap:
