@@ -16,10 +16,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 
+        window.REAL_TENDERS = [];
+    async function loadRealTenders() {
+        try {
+            const data = await safeFetch('/api/tenders/', () => {
+                return { tenders: window.DATA_FIXTURES.LICITACIONES_ACTIVAS };
+            });
+            window.REAL_TENDERS = data.tenders || window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
+            if (window.REAL_TENDERS.length === 0) {
+                 window.REAL_TENDERS = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
+            }
+        } catch(e) {
+            window.REAL_TENDERS = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
+        }
+    }
+
     async function init() {
         populateDropdownsAndTables();
         setupNavigation();
         await loadDashboardData();
+        await loadRealTenders();
         setupSimulator();
         setupSuppliers();
         setupLiveSearch();
