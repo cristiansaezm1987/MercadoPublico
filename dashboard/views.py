@@ -365,7 +365,31 @@ def api_search_historical(request):
     
     # Generate 3000 historical records (cached in memory for speed)
     if not hasattr(api_search_historical, '_cache'):
-        institutions = ["I MUNICIPALIDAD DE PUTAENDO", "HOSPITAL DE CURICO", "ILUSTRE MUNICIPALIDAD DE HUARA", "CORP NACIONAL FORESTAL", "HOSPITAL DR GUSTAVO FRICKE", "ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE", "CARABINEROS DE CHILE", "SERVICIO DE SALUD COQUIMBO", "MUNICIPALIDAD DE TEMUCO", "GOBIERNO REGIONAL DE AYSEN", "EJERCITO DE CHILE", "ARMADA DE CHILE", "JUNJI", "DIRECCION GENERAL DE AERONAUTICA"]
+        regionMap = {
+            "15": {"name": "Region de Arica y Parinacota", "inst": ["MUNICIPALIDAD DE ARICA", "SERVICIO DE SALUD ARICA"]},
+            "1": {"name": "Region de Tarapaca", "inst": ["MUNICIPALIDAD DE IQUIQUE", "HOSPITAL REGIONAL DE IQUIQUE", "ILUSTRE MUNICIPALIDAD DE HUARA"]},
+            "2": {"name": "Region de Antofagasta", "inst": ["MUNICIPALIDAD DE ANTOFAGASTA", "HOSPITAL REGIONAL DE ANTOFAGASTA"]},
+            "3": {"name": "Region de Atacama", "inst": ["MUNICIPALIDAD DE COPIAPO", "SERVICIO DE SALUD ATACAMA"]},
+            "4": {"name": "Region de Coquimbo", "inst": ["MUNICIPALIDAD DE LA SERENA", "SERVICIO DE SALUD COQUIMBO", "HOSPITAL SAN PABLO DE COQUIMBO"]},
+            "5": {"name": "Region de Valparaiso", "inst": ["I MUNICIPALIDAD DE PUTAENDO", "HOSPITAL DR GUSTAVO FRICKE", "MUNICIPALIDAD DE VALPARAISO"]},
+            "13": {"name": "Region Metropolitana", "inst": ["ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE"]},
+            "6": {"name": "Region de O'Higgins", "inst": ["MUNICIPALIDAD DE RANCAGUA", "HOSPITAL REGIONAL DE RANCAGUA"]},
+            "7": {"name": "Region del Maule", "inst": ["HOSPITAL DE CURICO", "MUNICIPALIDAD DE TALCA", "SERVICIO DE SALUD MAULE", "MUNICIPALIDAD DE LINARES"]},
+            "16": {"name": "Region de Nuble", "inst": ["MUNICIPALIDAD DE CHILLAN", "HOSPITAL HERMINDA MARTIN"]},
+            "8": {"name": "Region del Biobio", "inst": ["MUNICIPALIDAD DE CONCEPCION", "HOSPITAL REGIONAL GUILLERMO GRANT BENAVENTE", "UNIVERSIDAD DEL BIO-BIO"]},
+            "9": {"name": "Region de La Araucania", "inst": ["MUNICIPALIDAD DE TEMUCO", "HOSPITAL HERNAN HENRIQUEZ ARAVENA"]},
+            "14": {"name": "Region de Los Rios", "inst": ["MUNICIPALIDAD DE VALDIVIA", "UNIVERSIDAD AUSTRAL DE CHILE"]},
+            "10": {"name": "Region de Los Lagos", "inst": ["MUNICIPALIDAD DE PUERTO MONTT", "HOSPITAL BASE DE PUERTO MONTT", "MUNICIPALIDAD DE OSORNO"]},
+            "11": {"name": "Region de Aysen", "inst": ["GOBIERNO REGIONAL DE AYSEN", "MUNICIPALIDAD DE COYHAIQUE"]},
+            "12": {"name": "Region de Magallanes", "inst": ["MUNICIPALIDAD DE PUNTA ARENAS", "HOSPITAL CLINICO DE MAGALLANES"]}
+        }
+        statusMap = {
+            "2": "Adjudicada",
+            "3": "Publicada",
+            "4": "Desierta",
+            "5": "Cerrada",
+            "6": "Revocada"
+        }
         rubros_data = [
             {"id": "tecnologia", "nombre": "Tecnologia y Software"},
             {"id": "salud", "nombre": "Salud e Insumos Medicos"},
@@ -374,29 +398,35 @@ def api_search_historical(request):
             {"id": "vehiculos", "nombre": "Vehiculos y Repuestos"},
             {"id": "servicios", "nombre": "Servicios Especializados"}
         ]
-        regions_list = [
-            "Region de Arica y Parinacota", "Region de Tarapaca", "Region de Antofagasta", "Region de Atacama", "Region de Coquimbo", "Region de Valparaiso", "Region Metropolitana", "Region de OHiggins", "Region del Maule", "Region de Nuble", "Region del Biobio", "Region de La Araucania", "Region de Los Rios", "Region de Los Lagos", "Region de Aysen", "Region de Magallanes"
-        ]
-        estados = ["Publicada", "Adjudicada", "Desierta", "Cerrada", "Revocada"]
+        nacionales = ["CORP NACIONAL FORESTAL", "CARABINEROS DE CHILE", "EJERCITO DE CHILE", "ARMADA DE CHILE", "JUNJI", "DIRECCION GENERAL DE AERONAUTICA"]
+        
+        region_ids = list(regionMap.keys())
+        status_ids = list(statusMap.keys())
         
         cache = []
         now = datetime.datetime(2026, 6, 10)
         start_date = datetime.datetime(2023, 1, 1)
         total_days = (now - start_date).days
         
-        for i in range(3000):
+        for i in range(10000):
             r = random.choice(rubros_data)
-            random_days = random.randint(0, total_days)
-            cierre = start_date + datetime.timedelta(days=random_days)
+            dias_offset = random.randint(0, total_days)
+            cierre = start_date + datetime.timedelta(days=dias_offset)
             pub = cierre - datetime.timedelta(days=random.randint(1, 5))
             
-            estado = random.choice(estados)
-            # Most historical records are Adjudicada
+            st_id = random.choice(status_ids)
+            st_name = statusMap[st_id]
             if cierre < now and random.random() < 0.7:
-                estado = "Adjudicada"
-            
+                st_id = "2"
+                st_name = "Adjudicada"
+                
+            reg_id = random.choice(region_ids)
+            reg_name = regionMap[reg_id]["name"]
+            comp_list = regionMap[reg_id]["inst"]
+            comp = random.choice(nacionales) if random.random() < 0.2 else random.choice(comp_list)
+                
             presupuesto = random.randint(50000, 7150000)
-            precio_adj = presupuesto * random.uniform(0.7, 0.98) if estado == "Adjudicada" else None
+            precio_adj = presupuesto * random.uniform(0.7, 0.98) if st_name == "Adjudicada" else None
             
             cache.append({
                 "codigo": f"{random.randint(1000, 9999)}-{random.randint(100, 999)}-COT{str(cierre.year)[-2:]}",
@@ -404,9 +434,11 @@ def api_search_historical(request):
                 "tipo": "compra_agil",
                 "rubro": r["id"],
                 "rubro_nombre": r["nombre"],
-                "comprador": random.choice(institutions),
-                "region": random.choice(regions_list),
-                "estado": estado,
+                "comprador": comp,
+                "region_id": reg_id,
+                "region": reg_name,
+                "estado_id": st_id,
+                "estado": st_name,
                 "presupuesto": presupuesto,
                 "precio_adjudicado": precio_adj,
                 "fecha_publicacion": pub.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -436,13 +468,11 @@ def api_search_historical(request):
         except ValueError:
             pass
             
-    if region and region != 'all':
-        records = [r for r in records if r['region'] == region]
+    if region and region != 'all' and region != '':
+        records = [r for r in records if str(r.get('region_id')) == region or r.get('region') == region]
         
-    if status and status != 'all':
-        # Translate status numbers like Mercado Publico if needed, or string matching
-        # Assuming status strings directly for now
-        records = [r for r in records if r['estado'].lower() == status.lower() or status == 'all']
+    if status and status != 'all' and status != '':
+        records = [r for r in records if str(r.get('estado_id')) == status or r['estado'].lower() == status.lower()]
 
     # 2. Sorting
     order_by = request.GET.get('order_by', 'recent')
