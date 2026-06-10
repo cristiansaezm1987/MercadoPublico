@@ -16,19 +16,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 
-        window.REAL_TENDERS = [];
     async function loadRealTenders() {
         try {
-            const data = await safeFetch('/api/tenders/', () => {
-                return { tenders: window.DATA_FIXTURES.LICITACIONES_ACTIVAS };
+            const data = await safeFetch('/api/historical/', () => {
+                return { data: window.DATA_FIXTURES.LICITACIONES_ACTIVAS };
             });
-            window.REAL_TENDERS = data.tenders || window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
+            window.REAL_TENDERS = data.data || window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
             if (window.REAL_TENDERS.length === 0) {
                  window.REAL_TENDERS = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
             }
         } catch(e) {
             window.REAL_TENDERS = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
         }
+        renderDashboardRecentTenders(window.REAL_TENDERS);
+    }
+    
+    function renderDashboardRecentTenders(tenders) {
+        const tbody = document.getElementById('recent-tenders-body');
+        if (!tbody) return;
+        tbody.innerHTML = tenders.slice(0, 8).map(t => {
+            const scoreIA = calculate_cot_score(t);
+            let badgeClass = 'score-badge-green';
+            if (scoreIA >= 80) badgeClass = 'score-badge-gold';
+            if (scoreIA < 50) badgeClass = 'score-badge-blue';
+            return `<tr>
+                <td><code style="font-family:monospace;font-size:0.75rem;background:rgba(99,102,241,0.1);padding:2px 6px;border-radius:4px;color:var(--primary-light);">${t.codigo}</code></td>
+                <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.nombre}">${t.nombre}</td>
+                <td>${t.rubro_nombre || 'N/A'}</td>
+                <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.comprador}</td>
+                <td style="font-size:0.8rem;color:var(--text-muted);">${formatDateShort(t.fecha_publicacion)}</td>
+                <td style="font-size:0.8rem;color:var(--warning);">${formatDateShort(t.fecha_cierre)}</td>
+                <td style="font-family:monospace;">${window.formatCLP(t.presupuesto)}</td>
+                <td style="color:var(--text-muted);font-size:0.85rem;"><span class="${badgeClass}">${scoreIA.toFixed(0)}% Score IA</span></td>
+                <td style="font-family:monospace;font-weight:600;color:var(--success);">${window.formatCLP(t.precio_adjudicado)}</td>
+            </tr>`;
+        }).join('');
     }
 
     async function init() {
@@ -98,28 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             supRegion.innerHTML = regiones.map(reg => `<option value="${reg}" ${reg === "Region Metropolitana" ? "selected" : ""}>${reg}</option>`).join('');
         }
 
-        // Populate recent-tenders-body
-        const recentTendersBody = document.getElementById('recent-tenders-body');
-        if (recentTendersBody) {
-            recentTendersBody.innerHTML = recentTenders.slice(0, 8).map(t => {
-                const scoreIA = calculate_cot_score(t);
-                let badgeClass = 'score-badge-green';
-                if (scoreIA >= 80) badgeClass = 'score-badge-gold';
-                if (scoreIA < 50) badgeClass = 'score-badge-blue';
-                return `
-                <tr>
-                    <td><code style="font-family:monospace;font-size:0.75rem;background:rgba(99,102,241,0.1);padding:2px 6px;border-radius:4px;color:var(--primary-light);">${t.codigo}</code></td>
-                    <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.nombre}">${t.nombre}</td>
-                    <td>${t.rubro_nombre}</td>
-                    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.comprador}</td>
-                    <td style="font-size:0.8rem;color:var(--text-muted);">${formatDateShort(t.fecha_publicacion)}</td>
-                    <td style="font-size:0.8rem;color:var(--warning);">${formatDateShort(t.fecha_cierre)}</td>
-                    <td style="font-family:monospace;">${window.formatCLP(t.presupuesto_estimado)}</td>
-                    <td style="color:var(--text-muted);font-size:0.85rem;"><span class="${badgeClass}">${scoreIA.toFixed(0)}% Score IA</span></td>
-                    <td style="font-family:monospace;font-weight:600;color:var(--success);">${window.formatCLP(t.precio_adjudicado)}</td>
-                </tr>
-            `}).join('');
-        }
+        // Populated later dynamically with real data
     }
 
     function populateCompradoresDropdown(region) {
