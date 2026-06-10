@@ -93,9 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.comprador}</td>
                     <td style="font-size:0.8rem;color:var(--text-muted);">${formatDateShort(t.fecha_publicacion)}</td>
                     <td style="font-size:0.8rem;color:var(--warning);">${formatDateShort(t.fecha_cierre)}</td>
-                    <td style="font-family:monospace;">${formatCLP(t.presupuesto_estimado)}</td>
+                    <td style="font-family:monospace;">${window.formatCLP(t.presupuesto_estimado)}</td>
                     <td style="color:var(--text-muted);font-size:0.85rem;"><span class="${badgeClass}">${scoreIA.toFixed(0)}% Score IA</span></td>
-                    <td style="font-family:monospace;font-weight:600;color:var(--success);">${formatCLP(t.precio_adjudicado)}</td>
+                    <td style="font-family:monospace;font-weight:600;color:var(--success);">${window.formatCLP(t.precio_adjudicado)}</td>
                 </tr>
             `}).join('');
         }
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- UTILS ----
-    function formatCLP(val) {
+    window.formatCLP = function(val) {
         if (!val && val !== 0) return '$0';
         return '$' + Math.round(val).toLocaleString('es-CL');
     }
@@ -588,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const marginPesosEl = document.getElementById('sim-margin-pesos');
         const multiplierEl = document.getElementById('sim-multiplier');
 
-        if (priceEl) priceEl.textContent = formatCLP(data.suggested_price);
+        if (priceEl) priceEl.textContent = window.formatCLP(data.suggested_price);
         if (probEl) {
             animateValue(probEl, 0, data.suggested_prob, 800);
             probEl.style.color = getProbColor(data.suggested_prob);
@@ -596,7 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (marginEl) marginEl.textContent = data.suggested_margin.toFixed(1) + '%';
         if (marginPesosEl) {
             const marginPesos = (data.suggested_price || 0) - cost;
-            marginPesosEl.textContent = formatCLP(marginPesos) + ' margen';
+            marginPesosEl.textContent = window.formatCLP(marginPesos) + ' margen';
         }
         if (multiplierEl) multiplierEl.textContent = 'Multiplicador: ' + data.suggested_multiplier.toFixed(2) + 'x';
 
@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
         if (!competitors.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-dark);">Sin datos de competidores para este rubro.</td></tr>'; return; }
         tbody.innerHTML = competitors.map(c => {
-            const estPrice = formatCLP(cost * c.multiplicador_precio);
+            const estPrice = window.formatCLP(cost * c.multiplicador_precio);
             let repClass = 'badge-warning';
             if (c.reputacion === 'Alta' || c.reputacion === 'Muy Alta') repClass = 'badge-danger';
             if (c.reputacion === 'Baja') repClass = 'badge-success';
@@ -688,8 +688,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h4 style="font-weight:600;margin-bottom:0.5rem;font-size:0.9rem;">${s.nombre}</h4>
                 <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;">${s.region}</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.8rem;margin-bottom:1rem;">
-                    <div><span style="color:var(--text-dark);">Costo estimado</span><div style="font-family:monospace;font-weight:700;color:var(--primary-light);">${formatCLP(s.costo_estimado)}</div></div>
-                    <div><span style="color:var(--text-dark);">Ahorro total</span><div style="font-family:monospace;font-weight:700;color:var(--success);">${formatCLP(s.ahorro_estimado)}</div></div>
+                    <div><span style="color:var(--text-dark);">Costo estimado</span><div style="font-family:monospace;font-weight:700;color:var(--primary-light);">${window.formatCLP(s.costo_estimado)}</div></div>
+                    <div><span style="color:var(--text-dark);">Ahorro total</span><div style="font-family:monospace;font-weight:700;color:var(--success);">${window.formatCLP(s.ahorro_estimado)}</div></div>
                     <div><span style="color:var(--text-dark);">Confiabilidad</span><div style="color:var(--secondary);">${s.confiabilidad_pct.toFixed(1)}%</div></div>
                     <div><span style="color:var(--text-dark);">Contacto</span><div style="font-size:0.72rem;">${s.telefono}</div></div>
                 </div>
@@ -935,7 +935,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-top:1px solid rgba(148,163,184,0.08); padding-top:0.4rem;">
                     <span style="color:var(--text-dark); font-size:0.75rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.comprador}">${c.comprador}</span>
-                    <strong style="color:var(--secondary); font-family:monospace;">${formatCLP(c.presupuesto)}</strong>
+                    <strong style="color:var(--secondary); font-family:monospace;">${window.formatCLP(c.presupuesto)}</strong>
                 </div>
             </div>
         `}).join('');
@@ -1195,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const priceCell = it.error
                 ? `<span class="real-price-tag error-price">No disponible</span>`
-                : `<span class="real-price-tag${it.free_shipping ? ' free-ship' : ''}">${formatCLP(it.costoUnitario)}</span>
+                : `<span class="real-price-tag${it.free_shipping ? ' free-ship' : ''}">${window.formatCLP(it.costoUnitario)}</span>
                    ${it.free_shipping ? '<span class="free-ship-badge">Gratis</span>' : ''}`;
 
             const marginColor = it.marginPct >= 15 ? 'var(--success)' : it.marginPct >= 5 ? 'var(--warning)' : 'var(--danger)';
@@ -1205,9 +1205,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="font-size:0.8rem;">${it.cantidad} ${it.unidad}</td>
                 <td><span class="source-badge ${sourceClass}">${sourceLabel}</span></td>
                 <td>${priceCell}</td>
-                <td style="font-family:monospace;font-weight:600;">${formatCLP(it.costoTotal)}</td>
-                <td style="font-family:monospace;color:var(--text-muted);font-size:0.8rem;">${formatCLP(it.precioSugeridoUnitario)}</td>
-                <td style="font-family:monospace;font-weight:700;color:var(--secondary);">${formatCLP(it.precioSugeridoTotal)}</td>
+                <td style="font-family:monospace;font-weight:600;">${window.formatCLP(it.costoTotal)}</td>
+                <td style="font-family:monospace;color:var(--text-muted);font-size:0.8rem;">${window.formatCLP(it.precioSugeridoUnitario)}</td>
+                <td style="font-family:monospace;font-weight:700;color:var(--secondary);">${window.formatCLP(it.precioSugeridoTotal)}</td>
                 <td><span style="color:${marginColor};font-weight:700;font-size:0.8rem;">${it.marginPct.toFixed(0)}%</span></td>
                 <td>
                     <button class="btn" style="padding:4px 8px; font-size:0.7rem; background:rgba(99,102,241,0.15); color:var(--primary-light); border:1px solid rgba(99,102,241,0.3); border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:4px;" onclick="window.openQuoteModal(${index}, '${it.producto.replace(/'/g, "\\'")}')">
@@ -1220,9 +1220,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const footRow = `<tr style="border-top:2px solid rgba(148,163,184,0.15);">
             <td colspan="3" style="font-weight:700;color:var(--text-light);font-size:0.85rem;">TOTAL PROYECTADO</td>
             <td></td>
-            <td style="font-family:monospace;color:var(--text-light);font-weight:700;">${formatCLP(matchData.totalCost)}</td>
+            <td style="font-family:monospace;color:var(--text-light);font-weight:700;">${window.formatCLP(matchData.totalCost)}</td>
             <td></td>
-            <td style="font-family:monospace;color:var(--secondary);font-size:0.9rem;font-weight:800;">${formatCLP(matchData.totalBid)}</td>
+            <td style="font-family:monospace;color:var(--secondary);font-size:0.9rem;font-weight:800;">${window.formatCLP(matchData.totalBid)}</td>
             <td style="color:var(--success);font-size:0.9rem;font-weight:800;">${matchData.totalMarginPct.toFixed(1)}%</td>
             <td></td>
         </tr>`;
@@ -1242,11 +1242,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="quote-summary-bar">
                 <div class="summary-item">
                     <span class="summary-label">Costo Adquisición</span>
-                    <span class="summary-value cost">${formatCLP(matchData.totalCost)}</span>
+                    <span class="summary-value cost">${window.formatCLP(matchData.totalCost)}</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Oferta Sugerida IA</span>
-                    <span class="summary-value bid">${formatCLP(matchData.totalBid)}</span>
+                    <span class="summary-value bid">${window.formatCLP(matchData.totalBid)}</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Margen Neto</span>
@@ -1341,7 +1341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const listHtml = activeData.map((r, i) => {
             const imgHtml = `<div style="width:50px; height:50px; background:rgba(255,255,255,0.1); border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">${r.image ? `<img src="${r.image}" style="width:100%; height:100%; object-fit:contain; background:#fff;">` : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" opacity="0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`}</div>`;
             const priceHtml = r.price > 0 
-                ? `<div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${formatCLP(r.price)}</div>`
+                ? `<div style="font-weight:700; font-family:monospace; color:var(--text-light); font-size:1.1rem;">${window.formatCLP(r.price)}</div>`
                 : `<div style="font-weight:600; color:var(--text-muted); font-size:0.75rem;">Precio referencial (Consultar en sitio)</div>`;
             return `<div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; border:1px solid rgba(148,163,184,0.2); border-radius:8px; background:rgba(30,41,59,0.5); margin-bottom:8px;">
                 ${imgHtml}
@@ -1665,7 +1665,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div style="text-align:right;">
                     <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Presupuesto de Compra</span>
-                    <div style="font-size:1.35rem; font-weight:800; color:var(--secondary); font-family:monospace; margin-top:0.2rem;">${formatCLP(budget)}</div>
+                    <div style="font-size:1.35rem; font-weight:800; color:var(--secondary); font-family:monospace; margin-top:0.2rem;">${window.formatCLP(budget)}</div>
                     <span style="font-size:0.72rem; color:var(--text-dark); display:block; margin-top:0.25rem;">Región: ${cot.region.replace('Region de', 'R.').replace('Metropolitana', 'M.')}</span>
                 </div>
             </div>
@@ -1682,7 +1682,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="stats-mini-grid" style="margin-bottom:1.25rem;">
                     <div class="stat-mini-card">
                         <span>Costo de Compra Est.</span>
-                        <div style="color:var(--text-muted);">${formatCLP(costVal)}</div>
+                        <div style="color:var(--text-muted);">${window.formatCLP(costVal)}</div>
                     </div>
                     <div class="stat-mini-card">
                         <span>Margen Proyectado</span>
@@ -1694,7 +1694,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="stat-mini-card" style="border-color:var(--secondary); background:rgba(99,102,241,0.06);">
                         <span>Precio Oferta IA</span>
-                        <div style="color:var(--secondary); font-size:1rem; font-weight:800;">${formatCLP(suggestedBidPrice)}</div>
+                        <div style="color:var(--secondary); font-size:1rem; font-weight:800;">${window.formatCLP(suggestedBidPrice)}</div>
                     </div>
                 </div>
 
@@ -1743,7 +1743,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         </td>
                                         <td style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem; color:var(--text-muted);">${h.comprador}</td>
                                         <td style="max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem;">${h.adjudicado_a}</td>
-                                        <td style="font-family:monospace; font-weight:700; color:var(--success);">${formatCLP(h.precio_adjudicado)}</td>
+                                        <td style="font-family:monospace; font-weight:700; color:var(--success);">${window.formatCLP(h.precio_adjudicado)}</td>
                                         <td style="font-size:0.8rem; color:var(--text-dark);">${h.fecha_publicacion.split('-')[0]}</td>
                                     </tr>
                                 `).join('')}
@@ -1770,7 +1770,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${similarHistory.flatMap(h => (h.competidores_participantes || []).map(comp => ({ ...comp, code: h.codigo, year: h.fecha_publicacion.split('-')[0] }))).slice(0, 6).map(c => `
                                     <tr>
                                         <td style="font-weight:500;">${c.nombre}</td>
-                                        <td style="font-family:monospace; font-weight:600;">${formatCLP(c.precio)}</td>
+                                        <td style="font-family:monospace; font-weight:600;">${window.formatCLP(c.precio)}</td>
                                         <td><code style="font-family:monospace; font-size:0.7rem; color:var(--text-dark);">${c.code}</code></td>
                                         <td style="font-size:0.8rem; color:var(--text-muted);">${c.year}</td>
                                         <td>
@@ -1821,7 +1821,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             yaxis: {
                 labels: {
-                    formatter: v => formatCLP(v).replace('CLP', '').trim(),
+                    formatter: v => window.formatCLP(v).replace('CLP', '').trim(),
                     style: { fontSize: '9px' }
                 }
             },
@@ -1894,7 +1894,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="padding: 1rem; font-weight: 600; color: #3483FA;">${b.codigo}</td>
                 <td style="padding: 1rem;">${b.comprador || '-'}</td>
                 <td style="padding: 1rem; color: var(--text-muted); font-size: 0.85rem;">${dateStr}</td>
-                <td style="padding: 1rem; font-weight: 700; font-family: monospace;">${formatCLP(b.total)}</td>
+                <td style="padding: 1rem; font-weight: 700; font-family: monospace;">${window.formatCLP(b.total)}</td>
                 <td style="padding: 1rem; text-align: center;">
                     <span style="background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${b.estado}</span>
                 </td>
