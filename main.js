@@ -783,176 +783,83 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnSync = document.getElementById('btn-sync-api');
         if (!btnSync) return;
 
-        btnSync.addEventListener('click', runDataSync);
+        // Set default dates
+        const df = document.getElementById('rec-date-from');
+        const dt = document.getElementById('rec-date-to');
+        if (df) df.value = "2026-05-11";
+        if (dt) dt.value = "2026-06-10";
+
+        btnSync.addEventListener('click', () => { window.cotCurrentPage = 1; fetchCotHistorical(); });
         
         // Listeners para filtros
-        const recRubroEl = document.getElementById('rec-rubro');
-        const recRegionEl = document.getElementById('rec-region');
-        if (recRubroEl) recRubroEl.addEventListener('change', filterActiveCots);
-        if (recRegionEl) recRegionEl.addEventListener('change', filterActiveCots);
+        const filters = ['rec-date-from', 'rec-date-to', 'rec-region', 'rec-status', 'cot-sort-by'];
+        filters.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', () => { window.cotCurrentPage = 1; fetchCotHistorical(); });
+        });
         
-        const cotSortBy = document.getElementById('cot-sort-by');
-        const cotDateFilter = document.getElementById('cot-date-filter');
-        if (cotSortBy) cotSortBy.addEventListener('change', filterActiveCots);
-        if (cotDateFilter) cotDateFilter.addEventListener('change', filterActiveCots);
-        
-        // Carga inicial (vacia o placeholder)
-        filterActiveCots();
+        // Pagination
+        const btnPrev = document.getElementById('cot-page-prev');
+        const btnNext = document.getElementById('cot-page-next');
+        if (btnPrev) btnPrev.addEventListener('click', () => { if (window.cotCurrentPage > 1) { window.cotCurrentPage--; fetchCotHistorical(); }});
+        if (btnNext) btnNext.addEventListener('click', () => { window.cotCurrentPage++; fetchCotHistorical(); });
+
+        window.cotCurrentPage = 1;
         
         // Auto-run sync for better UX
         setTimeout(() => {
-            runDataSync();
+            fetchCotHistorical();
         }, 800);
     }
 
-    async function runDataSync() {
+    async function fetchCotHistorical() {
         const btnSync = document.getElementById('btn-sync-api');
-        const progressWrapper = document.getElementById('sync-progress-wrapper');
-        const progressBar = document.getElementById('sync-progress-bar');
-        const consoleLog = document.getElementById('sync-console-log');
-
-        // Obtener años seleccionados
-        const yearCheckboxes = document.querySelectorAll('.sync-year:checked');
-        const selectedYears = Array.from(yearCheckboxes).map(cb => cb.value);
-
-        if (selectedYears.length === 0) {
-            alert('Por favor, seleccione al menos un año para realizar la búsqueda histórica.');
-            return;
-        }
-
-        window.selectedYears = selectedYears;
-
-        btnSync.disabled = true;
-        btnSync.innerHTML = 'Leyendo Datos...';
-        progressWrapper.style.display = 'block';
-        consoleLog.style.display = 'block';
-        consoleLog.textContent = '';
-        progressBar.style.width = '0%';
-
-        const logMsg = (msg) => {
-            const time = new Date().toLocaleTimeString('es-CL', { hour12: false });
-            consoleLog.textContent += `[${time}] ${msg}\n`;
-            consoleLog.scrollTop = consoleLog.scrollHeight;
-        };
-
-        logMsg(`Iniciando conexión con API pública de Mercado Público Chile (api.mercadopublico.cl)...`);
-        await sleep(400);
-        logMsg(`Validando token de autenticación E7F30A19-3FAB-4011-8FBF-154E135C490A...`);
-        await sleep(300);
-        logMsg(`Credenciales validadas correctamente. Descargando índices históricos...`);
-        await sleep(300);
-
-        // Simulamos descarga secuencial por año
-        let totalSteps = selectedYears.length * 4;
-        let currentStep = 0;
-
-        for (let year of selectedYears) {
-            logMsg(`>>> Conectando a histórico del año ${year} (Búsqueda inteligente COTs)...`);
-            await sleep(400);
-            
-            // Simular meses del año
-            const trimestres = [
-                "Enero - Marzo",
-                "Abril - Junio",
-                "Julio - Septiembre",
-                "Octubre - Diciembre"
-            ];
-            
-            for (let t of trimestres) {
-                currentStep++;
-                let pct = Math.round((currentStep / totalSteps) * 90);
-                progressBar.style.width = `${pct}%`;
-                
-                // Generar log realista
-                const randCots = Math.floor(Math.random() * 80) + 30;
-                const dateParam = `01${String(Math.floor(Math.random()*12)+1).padStart(2, '0')}${year}`;
-                logMsg(`  GET /licitaciones.json?fecha=${dateParam}&estado=adjudicada - 200 OK (${t}: Procesadas ${randCots} Compras Ágiles)`);
-                await sleep(Math.floor(Math.random() * 200) + 150);
-            }
-            logMsg(`âœ” Año ${year} cargado con éxito en memoria caché.`);
-        }
-
-        logMsg(`Procesando adjudicaciones y marcas de competidores...`);
-        progressBar.style.width = `95%`;
-        await sleep(500);
-
-        progressBar.style.width = `100%`;
-        logMsg(`âœ” Sincronización completada.`);
-        logMsg(`âœ” Registrada base de datos de compras ágiles. Sistema 100% fiable y actualizado.`);
-        
-        btnSync.disabled = false;
-        btnSync.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Refrescar Lectura de Datos';
-
-        window.apiSynced = true;
-        filterActiveCots();
-    }
-
-    function filterActiveCots() {
         const listContainer = document.getElementById('cot-active-list');
         const countEl = document.getElementById('cot-active-count');
+        const df = document.getElementById('rec-date-from')?.value || '';
+        const dt = document.getElementById('rec-date-to')?.value || '';
+        const region = document.getElementById('rec-region')?.value || 'all';
+        const status = document.getElementById('rec-status')?.value || 'all';
+        const order_by = document.getElementById('cot-sort-by')?.value || 'recent';
+        
+        if (btnSync) {
+            btnSync.disabled = true;
+            btnSync.innerHTML = 'Buscando...';
+        }
+        if (listContainer) listContainer.innerHTML = '<div style="text-align:center; padding:3rem;"><div class="spinner"></div><p>Sincronizando histórico...</p></div>';
+
+        try {
+            let url = `/api/historical/?date_from=${df}&date_to=${dt}&region=${encodeURIComponent(region)}&status=${encodeURIComponent(status)}&order_by=${order_by}&page_number=${window.cotCurrentPage}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            window.apiSynced = true;
+            renderActiveCots(data.data, data.meta);
+        } catch (e) {
+            console.error(e);
+            if (listContainer) listContainer.innerHTML = '<div style="text-align:center;color:var(--error);padding:2rem;">Error al cargar datos.</div>';
+        } finally {
+            if (btnSync) {
+                btnSync.disabled = false;
+                btnSync.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Refrescar Lectura de Datos';
+            }
+        }
+    }
+
+    function renderActiveCots(activeCOTs, meta) {
+        const listContainer = document.getElementById('cot-active-list');
+        const countEl = document.getElementById('cot-active-count');
+        const btnPrev = document.getElementById('cot-page-prev');
+        const btnNext = document.getElementById('cot-page-next');
+        const infoEl = document.getElementById('cot-page-info');
+
         if (!listContainer) return;
 
-        if (!window.apiSynced) {
-            listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:3rem;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-dark); margin-bottom:1rem;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                <p>Por favor presione "Refrescar Lectura" para sincronizar y cargar las compras ágiles disponibles para los años seleccionados.</p>
-            </div>`;
-            if (countEl) countEl.textContent = '0 encontradas';
-            return;
-        }
-
-        const rubroFilter = document.getElementById('rec-rubro')?.value || '';
-        const regionFilter = document.getElementById('rec-region')?.value || '';
-        const sortBy = document.getElementById('cot-sort-by')?.value || 'cierre_asc';
-        const dateFilter = document.getElementById('cot-date-filter')?.value || 'all';
-
-        let activeCOTs = window.REAL_TENDERS.filter(t => {
-            const isCOT = t.codigo.toUpperCase().includes('COT') || t.tipo === 'compra_agil';
-            if (!isCOT) return false;
-            if (rubroFilter && t.rubro !== rubroFilter) return false;
-            if (regionFilter && t.region !== regionFilter) return false;
-            
-            // Simulated date filters relative to "2026-06-05" (simulated current time)
-            if (dateFilter === 'closing_soon') {
-                const closeDate = new Date(t.fecha_cierre);
-                const diffTime = closeDate - new Date("2026-06-05");
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays < 0 || diffDays > 3) return false;
-            } else if (dateFilter === 'recently_pub') {
-                const pubDate = new Date(t.fecha_publicacion);
-                const diffTime = new Date("2026-06-05") - pubDate;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays < 0 || diffDays > 7) return false;
-            }
-            
-            return true;
-        });
-
-        // Map and enrich COTs with calculated IA Win Score
-        activeCOTs = activeCOTs.map(t => {
-            const scoreIA = calculate_cot_score(t);
-            return { ...t, scoreIA: scoreIA };
-        });
-
-        // Sorting logic (primary is always the selected sorting criteria, default score/cierre)
-        activeCOTs.sort((a, b) => {
-            if (sortBy === 'cierre_asc') {
-                return new Date(a.fecha_cierre) - new Date(b.fecha_cierre);
-            } else if (sortBy === 'pub_desc') {
-                return new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion);
-            } else if (sortBy === 'presupuesto_desc') {
-                return b.presupuesto - a.presupuesto;
-            }
-            return 0;
-        });
-
-        // If no sort selected or default, let's sort by Score IA descending so user gets daily recommendations!
-        if (sortBy === 'cierre_asc' && rubroFilter === '' && regionFilter === '') {
-            // Sort by Score IA by default to suggest high-probability opportunities at the top!
-            activeCOTs.sort((a, b) => b.scoreIA - a.scoreIA);
-        }
-
-        if (countEl) countEl.textContent = `${activeCOTs.length} encontradas`;
+        if (countEl) countEl.textContent = `${meta.total_items} encontradas`;
+        if (infoEl) infoEl.textContent = `Página ${meta.current_page} de ${meta.total_pages}`;
+        
+        if (btnPrev) btnPrev.disabled = meta.current_page <= 1;
+        if (btnNext) btnNext.disabled = meta.current_page >= meta.total_pages;
 
         if (activeCOTs.length === 0) {
             listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:2rem;">
@@ -960,6 +867,12 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
             return;
         }
+
+        // Map and enrich COTs with calculated IA Win Score
+        activeCOTs = activeCOTs.map(t => {
+            const scoreIA = calculate_cot_score(t);
+            return { ...t, scoreIA: scoreIA };
+        });
 
         listContainer.innerHTML = activeCOTs.map((c, i) => {
             const scoreColor = getProbColor(c.scoreIA);
@@ -981,10 +894,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:0.6rem; color:var(--text-light); line-height:1.4;">${c.nombre}</h4>
                 
-                <!-- Fechas de publicacion y cierre -->
                 <div style="font-size:0.72rem; color:var(--text-dark); margin-bottom:0.6rem; display:grid; grid-template-columns:1fr 1fr; gap:0.25rem;">
                     <div>Publicada: <strong style="color:var(--text-muted);">${formatDateShort(c.fecha_publicacion)}</strong></div>
-                    <div style="text-align:right;">Cierre: <strong style="color:var(--warning);">${formatDateShort(c.fecha_cierre)}</strong></div>
+                    <div style="text-align:right;">Estado: <strong style="color:var(--warning);">${c.estado}</strong></div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-top:1px solid rgba(148,163,184,0.08); padding-top:0.4rem;">
