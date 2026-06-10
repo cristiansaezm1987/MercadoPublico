@@ -17,18 +17,53 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
 
         window.REAL_TENDERS = [];
-    async function loadRealTenders() {
+    async function loadRealTenders(region = '', fecha = '') {
         try {
-            const data = await safeFetch('/api/tenders/', () => {
+            let url = '/api/tenders/?';
+            if (region && region !== 'Todos') url += 'region=' + encodeURIComponent(region) + '&';
+            if (fecha) url += 'fecha_start=' + encodeURIComponent(fecha) + '&';
+            
+            const data = await safeFetch(url, () => {
                 return { tenders: window.DATA_FIXTURES.LICITACIONES_ACTIVAS };
             });
             window.REAL_TENDERS = data.tenders || window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
             if (window.REAL_TENDERS.length === 0) {
                  window.REAL_TENDERS = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
             }
+            renderRecentTenders(window.REAL_TENDERS);
         } catch(e) {
             window.REAL_TENDERS = window.DATA_FIXTURES.LICITACIONES_ACTIVAS;
+            renderRecentTenders(window.REAL_TENDERS);
         }
+    }
+
+    function renderRecentTenders(tenders) {
+        const tbody = document.getElementById('recent-tenders-body');
+        if (!tbody) return;
+        if (tenders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-dark);">No hay compras ágiles que coincidan con el filtro.</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = tenders.slice(0, 15).map(t => {
+            const scoreIA = calculate_cot_score(t);
+            let badgeClass = 'score-badge-green';
+            if (scoreIA >= 80) badgeClass = 'score-badge-gold';
+            if (scoreIA < 50) badgeClass = 'score-badge-blue';
+            return `
+            <tr>
+                <td><code style="font-family:monospace;font-size:0.75rem;background:rgba(99,102,241,0.1);padding:2px 6px;border-radius:4px;color:var(--primary-light);">${t.codigo}</code></td>
+                <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.nombre}">${t.nombre}</td>
+                <td>${t.rubro_nombre}</td>
+                <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.comprador}</td>
+                <td style="font-size:0.8rem;color:var(--text-muted);">${formatDateShort(t.fecha_publicacion || t.fecha_cierre)}</td>
+                <td style="font-size:0.8rem;color:var(--warning);">${formatDateShort(t.fecha_cierre)}</td>
+                <td style="font-family:monospace;">${window.formatCLP(t.presupuesto || t.presupuesto_estimado)}</td>
+                <td style="color:var(--text-muted);font-size:0.85rem;"><span class="${badgeClass}">${scoreIA.toFixed(0)}% Score IA</span></td>
+                <td style="font-family:monospace;font-weight:600;color:var(--success);">${window.formatCLP(t.precio_adjudicado || (t.presupuesto ? t.presupuesto * 0.95 : t.presupuesto_estimado * 0.95))}</td>
+            </tr>
+            `;
+        }).join('');
     }
 
     async function init() {
@@ -98,27 +133,21 @@ document.addEventListener('DOMContentLoaded', () => {
             supRegion.innerHTML = regiones.map(reg => `<option value="${reg}" ${reg === "Region Metropolitana" ? "selected" : ""}>${reg}</option>`).join('');
         }
 
-        // Populate recent-tenders-body
-        const recentTendersBody = document.getElementById('recent-tenders-body');
-        if (recentTendersBody) {
-            recentTendersBody.innerHTML = recentTenders.slice(0, 8).map(t => {
-                const scoreIA = calculate_cot_score(t);
-                let badgeClass = 'score-badge-green';
-                if (scoreIA >= 80) badgeClass = 'score-badge-gold';
-                if (scoreIA < 50) badgeClass = 'score-badge-blue';
-                return `
-                <tr>
-                    <td><code style="font-family:monospace;font-size:0.75rem;background:rgba(99,102,241,0.1);padding:2px 6px;border-radius:4px;color:var(--primary-light);">${t.codigo}</code></td>
-                    <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.nombre}">${t.nombre}</td>
-                    <td>${t.rubro_nombre}</td>
-                    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.comprador}</td>
-                    <td style="font-size:0.8rem;color:var(--text-muted);">${formatDateShort(t.fecha_publicacion)}</td>
-                    <td style="font-size:0.8rem;color:var(--warning);">${formatDateShort(t.fecha_cierre)}</td>
-                    <td style="font-family:monospace;">${window.formatCLP(t.presupuesto_estimado)}</td>
-                    <td style="color:var(--text-muted);font-size:0.85rem;"><span class="${badgeClass}">${scoreIA.toFixed(0)}% Score IA</span></td>
-                    <td style="font-family:monospace;font-weight:600;color:var(--success);">${window.formatCLP(t.precio_adjudicado)}</td>
-                </tr>
-            `}).join('');
+        // Populate dash-filter-region and add event listeners
+        const dashRegion = document.getElementById('dash-filter-region');
+        if (dashRegion) {
+            dashRegion.innerHTML += regiones.map(reg => `<option value="${reg}">${reg}</option>`).join('');
+            dashRegion.addEventListener('change', () => {
+                const dateVal = document.getElementById('dash-filter-fecha')?.value;
+                loadRealTenders(dashRegion.value, dateVal);
+            });
+        }
+        const dashFecha = document.getElementById('dash-filter-fecha');
+        if (dashFecha) {
+            dashFecha.addEventListener('change', () => {
+                const regVal = document.getElementById('dash-filter-region')?.value;
+                loadRealTenders(regVal, dashFecha.value);
+            });
         }
     }
 

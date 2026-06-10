@@ -209,9 +209,11 @@ def api_quote_items(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 def api_tenders(request):
+    import random
+    import datetime
     from django.http import JsonResponse
     
-    # Return exactly the active COT2X data the user sees on the live portal
+    # 1. Base real tenders (from user screenshot)
     dashboard_tenders = [
         {
             "codigo": "2626-270-COT26",
@@ -290,4 +292,66 @@ def api_tenders(request):
             ]
         }
     ]
-    return JsonResponse({"tenders": dashboard_tenders})
+    
+    # 2. Add 500 generated tenders to simulate a massive marketplace
+    institutions = ["ILUSTRE MUNICIPALIDAD DE SANTIAGO", "HOSPITAL CLINICO SAN BORJA", "MINISTERIO DE OBRAS PUBLICAS", "UNIVERSIDAD DE CHILE", "CARABINEROS DE CHILE", "SERVICIO DE SALUD COQUIMBO", "MUNICIPALIDAD DE TEMUCO", "GOBIERNO REGIONAL DE AYSEN", "EJERCITO DE CHILE", "ARMADA DE CHILE"]
+    rubros_data = [
+        {"id": "tecnologia", "nombre": "Tecnologia y Software"},
+        {"id": "salud", "nombre": "Salud e Insumos Medicos"},
+        {"id": "oficina", "nombre": "Articulos de Oficina"},
+        {"id": "construccion", "nombre": "Construccion y Ferreteria"},
+        {"id": "vehiculos", "nombre": "Vehiculos y Repuestos"}
+    ]
+    regions_list = [
+        "Region de Arica y Parinacota", "Region de Tarapaca", "Region de Antofagasta", "Region de Atacama", "Region de Coquimbo", "Region de Valparaiso", "Region Metropolitana", "Region de OHiggins", "Region del Maule", "Region de Nuble", "Region del Biobio", "Region de La Araucania", "Region de Los Rios", "Region de Los Lagos", "Region de Aysen", "Region de Magallanes"
+    ]
+    
+    # Base datetime (today)
+    now = datetime.datetime.now()
+    
+    for i in range(500):
+        r = random.choice(rubros_data)
+        dias_offset = random.randint(0, 10)
+        cierre = now + datetime.timedelta(days=dias_offset)
+        
+        dashboard_tenders.append({
+            "codigo": f"{random.randint(1000, 9999)}-{random.randint(100, 999)}-COT26",
+            "nombre": f"COMPRA AGIL MATERIALES {r['nombre'].upper()} - LOTE {i}",
+            "tipo": "compra_agil",
+            "rubro": r["id"],
+            "rubro_nombre": r["nombre"],
+            "comprador": random.choice(institutions),
+            "region": random.choice(regions_list),
+            "ciudad": "Ciudad Variada",
+            "presupuesto": random.randint(100000, 7150600), # Hasta 100 UTM
+            "fecha_cierre": cierre.strftime("%Y-%m-%dT%H:%M:%S"),
+            "items": [
+                {"producto": f"Item generico {r['nombre']}", "cantidad": random.randint(1, 100)}
+            ]
+        })
+        
+    # 3. Filtering Logic
+    filter_region = request.GET.get('region', '')
+    filter_fecha_start = request.GET.get('fecha_start', '')
+    filter_fecha_end = request.GET.get('fecha_end', '')
+    
+    result = dashboard_tenders
+    
+    if filter_region and filter_region != 'Todos':
+        result = [t for t in result if t.get('region') == filter_region]
+        
+    if filter_fecha_start:
+        try:
+            start_date = datetime.datetime.strptime(filter_fecha_start, "%Y-%m-%d").date()
+            result = [t for t in result if datetime.datetime.strptime(t['fecha_cierre'], "%Y-%m-%dT%H:%M:%S").date() >= start_date]
+        except ValueError:
+            pass
+            
+    if filter_fecha_end:
+        try:
+            end_date = datetime.datetime.strptime(filter_fecha_end, "%Y-%m-%d").date()
+            result = [t for t in result if datetime.datetime.strptime(t['fecha_cierre'], "%Y-%m-%dT%H:%M:%S").date() <= end_date]
+        except ValueError:
+            pass
+
+    return JsonResponse({"tenders": result, "total": len(result)})
